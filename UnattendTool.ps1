@@ -414,7 +414,7 @@ function ShowWipeDiskSelect {
     Write-Host -Object ''
     Write-Host -Object '1: 否'
     Write-Host -Object ''
-    Write-Host -Object '2: 是，注意：会清除所选硬盘的数据，请及时备份所选硬盘的数据' -ForegroundColor Red
+    Write-Host -Object '2: 是，注意：安装系统时会清除所选硬盘的数据，请及时备份所选硬盘的数据' -ForegroundColor Red
 
     while ($true) {
         Write-Host -Object ''
@@ -684,7 +684,7 @@ function ShowFomatSelect {
     Write-Host -Object ''
     Write-Host -Object '1: 否'
     Write-Host -Object ''
-    Write-Host -Object '2: 是，注意：会清除所选分区的数据，请及时备份所选分区的数据' -ForegroundColor Red
+    Write-Host -Object '2: 是，注意：安装系统时会清除所选分区的数据，请及时备份所选分区的数据' -ForegroundColor Red
 
     while ($true) {
         Write-Host -Object ''
