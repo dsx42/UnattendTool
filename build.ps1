@@ -1,33 +1,72 @@
-﻿Set-Location -Path $PSScriptRoot
+﻿Clear-Host
 
-$Version = .\UnattendTool.ps1 -Version
-$Output = 'target'
-$ProjectName = 'UnattendTool'
+Set-Location -Path $PSScriptRoot
 
-$DestinationPath = ".\$Output\${ProjectName}_$Version.zip"
+$ProductJsonPath = "$PSScriptRoot\product.json"
 
-$Files = @(
-    '.\UnattendTool.cmd',
-    '.\UnattendTool.ps1',
-    '.\LICENSE',
-    '.\README.md'
-)
-
-if (Test-Path -Path ".\$Output" -PathType Container) {
-    Remove-Item -Path ".\$Output" -Recurse -Force
+if (!(Test-Path -Path $ProductJsonPath -PathType Leaf)) {
+    Write-Warning -Message ("$ProductJsonPath 不存在")
+    [System.Environment]::Exit(0)
 }
 
-New-Item -Path ".\$Output\$ProjectName" -ItemType Directory -Force
+$ProductInfo = $null
+try {
+    $ProductInfo = Get-Content -Path $ProductJsonPath | ConvertFrom-Json
+}
+catch {
+    Write-Warning -Message ("$ProductJsonPath 解析失败")
+    [System.Environment]::Exit(0)
+}
+if (!$ProductInfo -or $ProductInfo -isNot [PSCustomObject]) {
+    Write-Warning -Message ("$ProductJsonPath 解析失败")
+    [System.Environment]::Exit(0)
+}
 
-Copy-Item -Path $Files -Destination ".\$Output\$ProjectName" -Force -Recurse
+$Version = $ProductInfo.'version'
+if (!$Version) {
+    Write-Warning -Message ("$ProductJsonPath 不存在 version 信息")
+    [System.Environment]::Exit(0)
+}
 
-Compress-Archive -Path ".\$Output\$ProjectName" -DestinationPath $DestinationPath -Force
+$ProjectName = $ProductInfo.'name'
+if (!$ProjectName) {
+    Write-Warning -Message ("$ProductJsonPath 不存在 name 信息")
+    [System.Environment]::Exit(0)
+}
 
-$Hash = Get-FileHash -Path $DestinationPath -Algorithm SHA256
+$Files = $ProductInfo.'files'
+if (!$Files -or $Files -isNot [System.Array] -or $Files.Count -le 0) {
+    Write-Warning -Message ("$ProductJsonPath 不存在 files 信息")
+    [System.Environment]::Exit(0)
+}
 
-$Checksum = $Hash.Hash + " ${ProjectName}_$Version.zip"
+$CopyFiles = @()
+foreach ($File in $Files) {
+    $CopyFiles += "$PSScriptRoot\$File"
+}
 
-Add-Content -Path ".\$Output\${ProjectName}_$Version.sha256" -Value $Checksum
+$Output = 'target'
+$OutputPath = "$PSScriptRoot\$Output"
+$OutputProjectPath = "$OutputPath\${ProjectName}"
+$OutputFileName = "${ProjectName}_v$Version"
+$ZipFilePath = "$OutputPath\$OutputFileName.zip"
+$Sha256FilePath = "$OutputPath\$OutputFileName.sha256"
+
+if (Test-Path -Path $OutputPath -PathType Container) {
+    Remove-Item -Path $OutputPath -Recurse -Force
+}
+
+New-Item -Path $OutputProjectPath -ItemType Directory -Force | Out-Null
+
+Copy-Item -Path $CopyFiles -Destination $OutputProjectPath -Force -Recurse
+
+Compress-Archive -Path $OutputProjectPath -DestinationPath $ZipFilePath -Force
+
+$Hash = Get-FileHash -Path $ZipFilePath -Algorithm SHA256
+
+$Checksum = $Hash.Hash + " $OutputFileName.zip"
+
+Add-Content -Path $Sha256FilePath -Value $Checksum
 
 Write-Host -Object ''
 Write-Host -Object ('Path: ' + $Hash.Path)

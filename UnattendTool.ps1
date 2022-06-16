@@ -794,7 +794,7 @@ function ShowGetISOPath {
     $ISOFiles = [ordered]@{}
     $Index = 0;
     try {
-        Get-ChildItem -Path $Path -Include '*.iso' -Recurse -File | ForEach-Object {
+        Get-ChildItem -Path $Path -Include '*.iso' -Recurse -File -ErrorAction SilentlyContinue | ForEach-Object {
             $Index = $Index + 1
             $ISOFiles.Add([System.String]$Index, $_.FullName)
         }
@@ -954,7 +954,37 @@ function UpdateVentoyConfig {
     [System.IO.File]::WriteAllLines($VentoyConfigJsonPath, $JSONString, $Utf8NoBomEncoding)
 }
 
-$VersionInfo = 'v2022.6.11'
+function GetVertion {
+    $ProductJsonPath = "$PSScriptRoot\product.json"
+
+    if (!(Test-Path -Path $ProductJsonPath -PathType Leaf)) {
+        Write-Warning -Message ("$ProductJsonPath 不存在")
+        [System.Environment]::Exit(0)
+    }
+
+    $ProductInfo = $null
+    try {
+        $ProductInfo = Get-Content -Path $ProductJsonPath | ConvertFrom-Json
+    }
+    catch {
+        Write-Warning -Message ("$ProductJsonPath 解析失败")
+        [System.Environment]::Exit(0)
+    }
+    if (!$ProductInfo -or $ProductInfo -isNot [PSCustomObject]) {
+        Write-Warning -Message ("$ProductJsonPath 解析失败")
+        [System.Environment]::Exit(0)
+    }
+
+    $Version = $ProductInfo.'version'
+    if (!$Version) {
+        Write-Warning -Message ("$ProductJsonPath 不存在 version 信息")
+        [System.Environment]::Exit(0)
+    }
+
+    return $Version
+}
+
+$VersionInfo = GetVertion
 
 if ($Version) {
     return $VersionInfo
@@ -962,9 +992,9 @@ if ($Version) {
 
 Clear-Host
 $PSDefaultParameterValues['*:Encoding'] = 'utf8'
-$Host.UI.RawUI.WindowTitle = 'Windows 应答文件生成' 
+$Host.UI.RawUI.WindowTitle = 'Windows 应答文件生成'
 Set-Location -Path $PSScriptRoot
-Write-Host -Object "=====> Windows 系统自动安装应答文件生成 $VersionInfo <====="
+Write-Host -Object "=====> Windows 系统自动安装应答文件生成 v$VersionInfo <====="
 Write-Host -Object ''
 
 $WipeDisk = $false
@@ -1093,13 +1123,11 @@ else {
 
 $VentoyConfigParentPath = Join-Path -Path $ParentPath -ChildPath 'ventoy'
 if (!$(Test-Path -Path $VentoyConfigParentPath -PathType Container)) {
-    New-Item -Path $VentoyConfigParentPath -ItemType Directory -Force
-    Write-Host -Object ''
+    New-Item -Path $VentoyConfigParentPath -ItemType Directory -Force | Out-Null
 }
 $VentoyConfigScriptPath = Join-Path -Path $VentoyConfigParentPath -ChildPath 'script'
 if (!$(Test-Path -Path $VentoyConfigScriptPath -PathType Container)) {
-    New-Item -Path $VentoyConfigScriptPath -ItemType Directory -Force
-    Write-Host -Object ''
+    New-Item -Path $VentoyConfigScriptPath -ItemType Directory -Force | Out-Null
 }
 
 $ProductInfo = @{}

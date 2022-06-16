@@ -1,1 +1,1 @@
-PowerShell -ExecutionPolicy RemoteSigned -File .\build.ps1
+PowerShell -NoProfile -ExecutionPolicy RemoteSigned -File "%~dp0build.ps1"

@@ -1,0 +1,11 @@
+{
+    "name": "UnattendTool",
+    "version": "2022.6.16",
+    "files": [
+        "UnattendTool.cmd",
+        "UnattendTool.ps1",
+        "product.json",
+        "LICENSE",
+        "README.md"
+    ]
+}

@@ -1,1 +1,1 @@
-PowerShell -ExecutionPolicy RemoteSigned -File .\UnattendTool.ps1 -Interactive
+PowerShell -NoProfile -ExecutionPolicy RemoteSigned -File "%~dp0UnattendTool.ps1" -Interactive
