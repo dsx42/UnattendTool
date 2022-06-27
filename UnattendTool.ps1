@@ -393,43 +393,46 @@ function ShowWipeDiskSelect {
 
     $CurrentDisks = GetCurrentDisk
     $SelectDisk = $CurrentDisks[$DiskId]
-    $DefaultWipe = $false
-    $DefalultSelect = 2
+    $DefalultSelect = 0
 
     if ($SelectDisk -and $SelectDisk['PartitionStyle'] -ine 'GPT') {
-        Write-Host -Object '======================================================================'
-        Write-Host -Object '选择是否对所选硬盘进行 GPT 分区，所选系统只支持 GPT 分区的硬盘，推荐 2'
-        Write-Host -Object '======================================================================'
-        $DefaultWipe = $true
-        $DefalultSelect = 2
+        Write-Host -Object '=================================='
+        Write-Host -Object '选择是否对所选硬盘进行分区，推荐 1'
+        Write-Host -Object '=================================='
+        $DefalultSelect = 1
     }
     else {
-        Write-Host -Object '======================================================================'
-        Write-Host -Object '选择是否对所选硬盘进行 GPT 分区，所选系统只支持 GPT 分区的硬盘，推荐 1'
-        Write-Host -Object '======================================================================'
-        $DefaultWipe = $false
-        $DefalultSelect = 1
+        Write-Host -Object '=================================='
+        Write-Host -Object '选择是否对所选硬盘进行分区，推荐 0'
+        Write-Host -Object '=================================='
+        $DefalultSelect = 0
     }
 
     Write-Host -Object ''
-    Write-Host -Object '1: 否'
+    Write-Host -Object '0: 否'
     Write-Host -Object ''
-    Write-Host -Object '2: 是，注意：安装系统时会清除所选硬盘的数据，请及时备份所选硬盘的数据' -ForegroundColor Red
+    Write-Host -Object '1: GPT 分区，注意：安装系统时会清除所选硬盘的数据，请及时备份所选硬盘的数据' -ForegroundColor Red
+    Write-Host -Object ''
+    Write-Host -Object '2: MBR 分区，注意：安装系统时会清除所选硬盘的数据，请及时备份所选硬盘的数据' -ForegroundColor Red
 
     while ($true) {
         Write-Host -Object ''
         $InputOption = Read-Host -Prompt "请输入选择的序号(默认为 $DefalultSelect)，按回车键确认"
         if ($InputOption -ieq '') {
             Write-Host -Object ''
-            return $DefaultWipe
+            return $DefalultSelect
+        }
+        elseif ('0' -ieq $InputOption) {
+            Write-Host -Object ''
+            return 0
         }
         elseif ($InputOption -ieq '1') {
             Write-Host -Object ''
-            return $false
+            return 1
         }
         elseif ($InputOption -ieq '2') {
             Write-Host -Object ''
-            return $true
+            return 2
         }
         else {
             Write-Host -Object ''
@@ -518,35 +521,43 @@ function ShowIsBoot {
 
 function ShowCreatePartition {
 
-    $CreatePartitionInfo = [ordered]@{
-        '1' = @{
-            'Order'      = 1;
-            'Size'       = 300;
-            'Type'       = 'EFI';
-            'TypeName'   = 'EFI 分区';
-            'FileSystem' = 'FAT32';
-            'Extend'     = $false;
-            'IsHidden'   = $true;
-            'IsBoot'     = $false
-        };
-        '2' = @{
-            'Order'      = 2;
-            'Size'       = 200;
-            'Type'       = 'MSR';
-            'TypeName'   = '微软保留分区';
-            'FileSystem' = '';
-            'Extend'     = $false;
-            'IsHidden'   = $true;
-            'IsBoot'     = $false
+    if (1 -eq $script:WipeDisk) {
+        $CreatePartitionInfo = [ordered]@{
+            '1' = @{
+                'Order'      = 1;
+                'Size'       = 100;
+                'Type'       = 'EFI';
+                'TypeName'   = 'EFI 分区';
+                'FileSystem' = 'FAT32';
+                'Extend'     = $false;
+                'IsHidden'   = $true;
+                'IsBoot'     = $false
+            };
+            '2' = @{
+                'Order'      = 2;
+                'Size'       = 128;
+                'Type'       = 'MSR';
+                'TypeName'   = '微软保留分区';
+                'FileSystem' = '';
+                'Extend'     = $false;
+                'IsHidden'   = $true;
+                'IsBoot'     = $false
+            }
         }
+        $PartitionNumber = 2
+        Write-Host -Object '==============='
+        Write-Host -Object '创建新 GPT 分区'
+        Write-Host -Object '==============='
+        Write-Host -Object ''
     }
-
-    Write-Host -Object '=========='
-    Write-Host -Object '创建新分区'
-    Write-Host -Object '=========='
-    Write-Host -Object ''
-
-    $PartitionNumber = 2
+    else {
+        $CreatePartitionInfo = [ordered]@{}
+        $PartitionNumber = 0
+        Write-Host -Object '======================================'
+        Write-Host -Object '创建新 MBR 分区，最多支持创建 4 个分区'
+        Write-Host -Object '======================================'
+        Write-Host -Object ''
+    }
 
     ShowNewPartition -CreatePartitionInfo $CreatePartitionInfo
 
@@ -591,7 +602,12 @@ function ShowCreatePartition {
                 Write-Host -Object ''
                 continue
             }
-            $ShowAddNewPartition = ShowAddNewPartition
+            if (2 -eq $script:WipeDisk -and $PartitionNumber -ge 4) {
+                $ShowAddNewPartition = $false
+            }
+            else {
+                $ShowAddNewPartition = ShowAddNewPartition
+            }
             if (!$ShowAddNewPartition) {
                 $CreatePartitionInfo["$PartitionNumber"]['Extend'] = $true
                 break
@@ -997,7 +1013,7 @@ Set-Location -Path $PSScriptRoot
 Write-Host -Object "=====> Windows 系统自动安装应答文件生成 v$VersionInfo <====="
 Write-Host -Object ''
 
-$WipeDisk = $false
+$WipeDisk = 0
 $Token = '31bf3856ad364e35'
 $WindowsProduct = [ordered]@{
     'Enterprise'           = @{
@@ -1041,7 +1057,7 @@ if ($Interactive) {
     $Architecture = ShowArchitectureSelect -OsVersion $OsVersion
     $DiskId = ShowDiskIdSelect
     $WipeDisk = ShowWipeDiskSelect -DiskId $DiskId
-    if ($WipeDisk) {
+    if (1 -eq $WipeDisk -or 2 -eq $WipeDisk) {
         $CreatePartitionInfo = ShowCreatePartition
     }
     else {
@@ -1130,16 +1146,23 @@ if (!$(Test-Path -Path $VentoyConfigScriptPath -PathType Container)) {
     New-Item -Path $VentoyConfigScriptPath -ItemType Directory -Force | Out-Null
 }
 
+$DiskTypeStr = ''
+if ($WipeDisk -eq 1) {
+    $DiskTypeStr = '_GPT'
+}
+elseif ($WipeDisk -eq 2) {
+    $DiskTypeStr = '_MBR'
+}
 $ProductInfo = @{}
 if ('' -ieq $WindowsProductName) {
     $UnattendPath = $VentoyConfigScriptPath + '\Unattend_Windows_' + $OsVersion + '_' + $Architecture + '_' `
-        + $Language + '_' + $FullName + '.xml'
+        + $Language + $DiskTypeStr + '_' + $FullName + '.xml'
 }
 else {
     $ProductInfo = $WindowsProduct[$WindowsProductName]
     $NoSpaceName = $ProductInfo['NoSpaceName']
     $UnattendPath = $VentoyConfigScriptPath + '\Unattend_Windows_' + $OsVersion + '_' + $NoSpaceName + '_' `
-        + $Architecture + '_' + $Language + '_' + $FullName + '.xml'
+        + $Architecture + '_' + $Language + $DiskTypeStr + '_' + $FullName + '.xml'
 }
 
 UpdateVentoyConfig -ISOPath $ISOPath -UnattendPath $UnattendPath -VentoyConfigParentPath $VentoyConfigParentPath
@@ -1157,10 +1180,17 @@ Add-Content -Path $UnattendPath -Value ("        <component name=`"Microsoft-Win
 Add-Content -Path $UnattendPath -Value '            <SetupUILanguage>'
 Add-Content -Path $UnattendPath -Value "                <UILanguage>$Language</UILanguage>"
 Add-Content -Path $UnattendPath -Value '            </SetupUILanguage>'
-Add-Content -Path $UnattendPath -Value "            <InputLocale>$Language</InputLocale>"
+if ('zh-CN' -eq $Language) {
+    Add-Content -Path $UnattendPath -Value ('            <InputLocale>0804:{81D4E9C9-1D3B-41BC-9E6C-4B40BF79E35E}' + `
+            '{FA550B04-5AD7-411f-A5AC-CA038EC515D7}</InputLocale>')
+}
+else {
+    Add-Content -Path $UnattendPath -Value '            <InputLocale>0409:00000409</InputLocale>'
+}
 Add-Content -Path $UnattendPath -Value "            <UILanguage>$Language</UILanguage>"
 Add-Content -Path $UnattendPath -Value "            <SystemLocale>$Language</SystemLocale>"
 Add-Content -Path $UnattendPath -Value "            <UserLocale>$Language</UserLocale>"
+Add-Content -Path $UnattendPath -Value "            <UILanguageFallback>$Language</UILanguageFallback>"
 Add-Content -Path $UnattendPath -Value '        </component>'
 Add-Content -Path $UnattendPath -Value ''
 Add-Content -Path $UnattendPath -Value ("        <component name=`"Microsoft-Windows-Setup`"" `
@@ -1176,11 +1206,14 @@ if ($FullName) {
 }
 if ($WindowsProductName) {
     $key = $ProductInfo['gvlk']
-    Add-Content -Path $UnattendPath -Value "                <ProductKey><Key>$key</Key></ProductKey>"
+    Add-Content -Path $UnattendPath -Value '                <ProductKey>'
+    Add-Content -Path $UnattendPath -Value "                    <Key>$key</Key>"
+    Add-Content -Path $UnattendPath -Value '                    <WillShowUI>Never</WillShowUI>'
+    Add-Content -Path $UnattendPath -Value '                </ProductKey>'
 }
 Add-Content -Path $UnattendPath -Value '            </UserData>'
 Add-Content -Path $UnattendPath -Value ''
-if ($WipeDisk) {
+if ($WipeDisk -ne 0) {
     Add-Content -Path $UnattendPath -Value '            <DiskConfiguration>'
     Add-Content -Path $UnattendPath -Value '                <Disk wcm:action="add">'
     Add-Content -Path $UnattendPath -Value "                    <DiskID>$DiskId</DiskID>"
@@ -1189,7 +1222,7 @@ if ($WipeDisk) {
     Add-Content -Path $UnattendPath -Value ''
     Add-Content -Path $UnattendPath -Value '                    <CreatePartitions>'
     $CreatePartitionInfo.GetEnumerator() | ForEach-Object {
-        Add-Content -Path $UnattendPath -Value '                        <CreatePartition>'
+        Add-Content -Path $UnattendPath -Value '                        <CreatePartition wcm:action="add">'
         if ($_.Value['Extend']) {
             Add-Content -Path $UnattendPath -Value '                            <Extend>true</Extend>'
         }
@@ -1207,7 +1240,10 @@ if ($WipeDisk) {
     Add-Content -Path $UnattendPath -Value ''
     Add-Content -Path $UnattendPath -Value '                    <ModifyPartitions>'
     $CreatePartitionInfo.GetEnumerator() | ForEach-Object {
-        Add-Content -Path $UnattendPath -Value '                        <ModifyPartition>'
+        Add-Content -Path $UnattendPath -Value '                        <ModifyPartition wcm:action="add">'
+        if ($WipeDisk -eq 2 -and $_.Value['IsBoot']) {
+            Add-Content -Path $UnattendPath -Value '                            <Active>true</Active>'
+        }
         $Format = $_.Value['FileSystem']
         if ($Format) {
             Add-Content -Path $UnattendPath -Value "                            <Format>$Format</Format>"
@@ -1215,8 +1251,6 @@ if ($WipeDisk) {
         $Order = $_.Value['Order']
         Add-Content -Path $UnattendPath -Value "                            <Order>$Order</Order>"
         Add-Content -Path $UnattendPath -Value "                            <PartitionID>$Order</PartitionID>"
-        $Type = $_.Value['Type']
-        Add-Content -Path $UnattendPath -Value "                            <TypeID>$Type</TypeID>"
         Add-Content -Path $UnattendPath -Value '                        </ModifyPartition>'
     }
     Add-Content -Path $UnattendPath -Value '                    </ModifyPartitions>'
@@ -1230,7 +1264,7 @@ elseif (!$NotFormat) {
     Add-Content -Path $UnattendPath -Value "                    <DiskID>$DiskId</DiskID>"
     Add-Content -Path $UnattendPath -Value ''
     Add-Content -Path $UnattendPath -Value '                    <ModifyPartitions>'
-    Add-Content -Path $UnattendPath -Value '                        <ModifyPartition>'
+    Add-Content -Path $UnattendPath -Value '                        <ModifyPartition wcm:action="add">'
     Add-Content -Path $UnattendPath -Value '                            <Format>NTFS</Format>'
     Add-Content -Path $UnattendPath -Value "                            <PartitionID>$PartitionID</PartitionID>"
     Add-Content -Path $UnattendPath -Value '                        </ModifyPartition>'
@@ -1266,21 +1300,79 @@ Add-Content -Path $UnattendPath -Value '            </ImageInstall>'
 Add-Content -Path $UnattendPath -Value '        </component>'
 Add-Content -Path $UnattendPath -Value '    </settings>'
 Add-Content -Path $UnattendPath -Value ''
+Add-Content -Path $UnattendPath -Value '    <settings pass="specialize">'
+Add-Content -Path $UnattendPath -Value ("        <component name=`"Microsoft-Windows-International-Core`"" `
+        + " processorArchitecture=`"$ArchitectureName`" publicKeyToken=`"$Token`" language=`"neutral`"" `
+        + " versionScope=`"nonSxS`" xmlns:wcm=`"http://schemas.microsoft.com/WMIConfig/2002/State`"" `
+        + " xmlns:xsi=`"http://www.w3.org/2001/XMLSchema-instance`">")
+if ('zh-CN' -eq $Language) {
+    Add-Content -Path $UnattendPath -Value ('            <InputLocale>0804:{81D4E9C9-1D3B-41BC-9E6C-4B40BF79E35E}' + `
+            '{FA550B04-5AD7-411f-A5AC-CA038EC515D7}</InputLocale>')
+}
+else {
+    Add-Content -Path $UnattendPath -Value '            <InputLocale>0409:00000409</InputLocale>'
+}
+Add-Content -Path $UnattendPath -Value "            <UILanguage>$Language</UILanguage>"
+Add-Content -Path $UnattendPath -Value "            <SystemLocale>$Language</SystemLocale>"
+Add-Content -Path $UnattendPath -Value "            <UserLocale>$Language</UserLocale>"
+Add-Content -Path $UnattendPath -Value "            <UILanguageFallback>$Language</UILanguageFallback>"
+Add-Content -Path $UnattendPath -Value '        </component>'
+Add-Content -Path $UnattendPath -Value ''
+Add-Content -Path $UnattendPath -Value ("        <component name=`"Microsoft-Windows-Security-SPP-UX`"" `
+        + " processorArchitecture=`"$ArchitectureName`" publicKeyToken=`"$Token`" language=`"neutral`"" `
+        + " versionScope=`"nonSxS`" xmlns:wcm=`"http://schemas.microsoft.com/WMIConfig/2002/State`"" `
+        + " xmlns:xsi=`"http://www.w3.org/2001/XMLSchema-instance`">")
+Add-Content -Path $UnattendPath -Value '            <SkipAutoActivation>true</SkipAutoActivation>'
+Add-Content -Path $UnattendPath -Value '        </component>'
+Add-Content -Path $UnattendPath -Value ''
+Add-Content -Path $UnattendPath -Value ("        <component name=`"Microsoft-Windows-SQMApi`"" `
+        + " processorArchitecture=`"$ArchitectureName`" publicKeyToken=`"$Token`" language=`"neutral`"" `
+        + " versionScope=`"nonSxS`" xmlns:wcm=`"http://schemas.microsoft.com/WMIConfig/2002/State`"" `
+        + " xmlns:xsi=`"http://www.w3.org/2001/XMLSchema-instance`">")
+Add-Content -Path $UnattendPath -Value '            <CEIPEnabled>0</CEIPEnabled>'
+Add-Content -Path $UnattendPath -Value '        </component>'
+if ($WindowsProductName) {
+    $key = $ProductInfo['gvlk']
+    Add-Content -Path $UnattendPath -Value ''
+    Add-Content -Path $UnattendPath -Value ("        <component name=`"Microsoft-Windows-Shell-Setup`"" `
+            + " processorArchitecture=`"$ArchitectureName`" publicKeyToken=`"$Token`" language=`"neutral`"" `
+            + " versionScope=`"nonSxS`" xmlns:wcm=`"http://schemas.microsoft.com/WMIConfig/2002/State`"" `
+            + " xmlns:xsi=`"http://www.w3.org/2001/XMLSchema-instance`">")
+    Add-Content -Path $UnattendPath -Value "            <ProductKey>$key</ProductKey>"
+    Add-Content -Path $UnattendPath -Value '        </component>'
+}
+Add-Content -Path $UnattendPath -Value '    </settings>'
+Add-Content -Path $UnattendPath -Value ''
 Add-Content -Path $UnattendPath -Value '    <settings pass="oobeSystem">'
 Add-Content -Path $UnattendPath -Value ("        <component name=`"Microsoft-Windows-Shell-Setup`"" `
         + " processorArchitecture=`"$ArchitectureName`" publicKeyToken=`"$Token`" language=`"neutral`"" `
         + " versionScope=`"nonSxS`" xmlns:wcm=`"http://schemas.microsoft.com/WMIConfig/2002/State`"" `
         + " xmlns:xsi=`"http://www.w3.org/2001/XMLSchema-instance`">")
 if ($FullName) {
+    Add-Content -Path $UnattendPath -Value '            <AutoLogon>'
+    Add-Content -Path $UnattendPath -Value '                <Password>'
+    Add-Content -Path $UnattendPath -Value '                    <Value/>'
+    Add-Content -Path $UnattendPath -Value '                    <PlainText>true</PlainText>'
+    Add-Content -Path $UnattendPath -Value '                </Password>'
+    Add-Content -Path $UnattendPath -Value '                <Enabled>true</Enabled>'
+    Add-Content -Path $UnattendPath -Value "                <Username>$FullName</Username>"
+    Add-Content -Path $UnattendPath -Value '            </AutoLogon>'
+    Add-Content -Path $UnattendPath -Value ''
     Add-Content -Path $UnattendPath -Value '            <UserAccounts>'
     Add-Content -Path $UnattendPath -Value '                <LocalAccounts>'
     Add-Content -Path $UnattendPath -Value '                    <LocalAccount wcm:action="add">'
+    Add-Content -Path $UnattendPath -Value '                        <Password>'
+    Add-Content -Path $UnattendPath -Value '                            <Value/>'
+    Add-Content -Path $UnattendPath -Value '                            <PlainText>true</PlainText>'
+    Add-Content -Path $UnattendPath -Value '                        </Password>'
     Add-Content -Path $UnattendPath -Value "                        <DisplayName>$FullName</DisplayName>"
     Add-Content -Path $UnattendPath -Value '                        <Group>Administrators</Group>'
     Add-Content -Path $UnattendPath -Value "                        <Name>$FullName</Name>"
     Add-Content -Path $UnattendPath -Value '                    </LocalAccount>'
     Add-Content -Path $UnattendPath -Value '                </LocalAccounts>'
     Add-Content -Path $UnattendPath -Value '            </UserAccounts>'
+    Add-Content -Path $UnattendPath -Value ''
+    Add-Content -Path $UnattendPath -Value "            <RegisteredOwner>$FullName</RegisteredOwner>"
     Add-Content -Path $UnattendPath -Value ''
 }
 Add-Content -Path $UnattendPath -Value '            <OOBE>'
@@ -1291,6 +1383,13 @@ Add-Content -Path $UnattendPath -Value '                <HideWirelessSetupInOOBE
 Add-Content -Path $UnattendPath -Value '                <HideLocalAccountScreen>true</HideLocalAccountScreen>'
 Add-Content -Path $UnattendPath -Value '                <ProtectYourPC>3</ProtectYourPC>'
 Add-Content -Path $UnattendPath -Value '            </OOBE>'
+Add-Content -Path $UnattendPath -Value ''
+if ($Language -ieq 'zh-CN') {
+    Add-Content -Path $UnattendPath -Value '            <TimeZone>China Standard Time</TimeZone>'
+}
+else {
+    Add-Content -Path $UnattendPath -Value '            <TimeZone>Pacific Standard Time</TimeZone>'
+}
 Add-Content -Path $UnattendPath -Value '        </component>'
 Add-Content -Path $UnattendPath -Value '    </settings>'
 Add-Content -Path $UnattendPath -Value '</unattend>'

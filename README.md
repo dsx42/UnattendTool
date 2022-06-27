@@ -64,3 +64,9 @@
 * `-VentoyDriverLetter String`：已安装 Ventoy 的 U 盘驱动器；默认为当前用户的桌面
 * `-ISOPath String`：使用应答文件的 ISO 镜像文件的路径；默认未指定
 * `-NotFormat`：安装系统时不格式化所选硬盘分区；默认安装时会格式化所选硬盘分区
+
+# 参考资料
+
+> Windonws 11 应答文件必须的内容：https://docs.microsoft.com/en-us/windows-hardware/manufacture/desktop/automate-windows-setup?view=windows-11
+> 应答文件组件介绍：https://docs.microsoft.com/en-us/windows-hardware/customize/desktop/unattend/components-b-unattend
+> 在线应答文件生成器：https://www.windowsafg.com/index.html
