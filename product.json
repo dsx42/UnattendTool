@@ -1,6 +1,6 @@
 {
     "name": "UnattendTool",
-    "version": "2022.6.27",
+    "version": "2022.6.30",
     "files": [
         "UnattendTool.cmd",
         "UnattendTool.ps1",

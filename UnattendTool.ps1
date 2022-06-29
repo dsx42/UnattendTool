@@ -4,7 +4,8 @@
     $WindowsProductName = 'Enterprise',
     $Architecture = 'x64',
     $DiskId = -1,
-    $PartitionID = -1,
+    $PartitionId = -1,
+    $PartitionStyle = 'GPT',
     $FullName = 'MyPC',
     $VentoyDriverLetter = '',
     $ISOPath = '',
@@ -502,7 +503,7 @@ function ShowIsBoot {
             if ($SelectPartition['Type'] -ieq 'Primary') {
                 Write-Host -Object ''
                 $SelectPartition['IsBoot'] = $true
-                $Script:PartitionID = $SelectPartition['Order']
+                $Script:PartitionId = $SelectPartition['Order']
                 return
             }
             else {
@@ -712,6 +713,48 @@ function ShowFomatSelect {
         elseif ($InputOption -ieq '1') {
             Write-Host -Object ''
             return $false
+        }
+        else {
+            Write-Host -Object ''
+            Write-Warning -Message '选择无效，请重新输入'
+        }
+    }
+}
+
+function ShowPartitionStyleSelect {
+    param($DiskId)
+
+    $CurrentDisks = GetCurrentDisk
+    $SelectDisk = $CurrentDisks[$DiskId]
+    $DefalultSelect = 1
+    $DefaultPartitionStyle = 'GPT'
+    if ($SelectDisk -and $SelectDisk['PartitionStyle'] -ine 'GPT') {
+        $DefalultSelect = 2
+        $DefaultPartitionStyle = 'MBR'
+    }
+
+    Write-Host -Object '===================================='
+    Write-Host -Object "请确认所选硬盘分区的分区类型，推荐 $DefalultSelect"
+    Write-Host -Object '===================================='
+    Write-Host -Object ''
+    Write-Host -Object '1: GPT 分区'
+    Write-Host -Object ''
+    Write-Host -Object '2: MBR 分区'
+
+    while ($true) {
+        Write-Host -Object ''
+        $InputOption = Read-Host -Prompt "请输入选择的序号(默认为 $DefalultSelect)，按回车键确认"
+        if ($InputOption -ieq '') {
+            Write-Host -Object ''
+            return $DefaultPartitionStyle
+        }
+        if ($InputOption -ieq '1') {
+            Write-Host -Object ''
+            return 'GPT'
+        }
+        elseif ($InputOption -ieq '2') {
+            Write-Host -Object ''
+            return 'MBR'
         }
         else {
             Write-Host -Object ''
@@ -1061,8 +1104,11 @@ if ($Interactive) {
         $CreatePartitionInfo = ShowCreatePartition
     }
     else {
-        $PartitionID = ShowPartitionIdSelect -DiskId $DiskId
+        $PartitionId = ShowPartitionIdSelect -DiskId $DiskId
         $NotFormat = !$(ShowFomatSelect)
+        if (!$NotFormat) {
+            $PartitionStyle = ShowPartitionStyleSelect -DiskId $DiskId
+        }
     }
     $FullName = ShowNameInput
     $VentoyDriverLetter = ShowVentoyDriverLetterSelect
@@ -1118,8 +1164,19 @@ if ($DiskId -eq -1) {
     $DiskId = GetSystemDiskId
 }
 
-if ($PartitionID -eq -1) {
-    $PartitionID = GetSystemPartitionId
+if ($PartitionId -eq -1) {
+    $PartitionId = GetSystemPartitionId
+}
+
+if ($PartitionStyle -ine 'GPT' -and $PartitionStyle -ine 'MBR') {
+    Write-Warning -Message '参数 PartitionStyle 只支持 GPT, MBR'
+    [System.Environment]::Exit(0)
+}
+if ($PartitionStyle -ieq 'GPT') {
+    $PartitionStyle = 'GPT'
+}
+elseif ($PartitionStyle -ieq 'MBR') {
+    $PartitionStyle = 'MBR'
 }
 
 if ('' -ieq $VentoyDriverLetter) {
@@ -1148,10 +1205,13 @@ if (!$(Test-Path -Path $VentoyConfigScriptPath -PathType Container)) {
 
 $DiskTypeStr = ''
 if ($WipeDisk -eq 1) {
-    $DiskTypeStr = '_GPT'
+    $DiskTypeStr = '_CreateGPT'
 }
 elseif ($WipeDisk -eq 2) {
-    $DiskTypeStr = '_MBR'
+    $DiskTypeStr = '_CreateMBR'
+}
+elseif (!$NotFormat) {
+    $DiskTypeStr = "_Format$PartitionStyle"
 }
 $ProductInfo = @{}
 if ('' -ieq $WindowsProductName) {
@@ -1180,13 +1240,7 @@ Add-Content -Path $UnattendPath -Value ("        <component name=`"Microsoft-Win
 Add-Content -Path $UnattendPath -Value '            <SetupUILanguage>'
 Add-Content -Path $UnattendPath -Value "                <UILanguage>$Language</UILanguage>"
 Add-Content -Path $UnattendPath -Value '            </SetupUILanguage>'
-if ('zh-CN' -eq $Language) {
-    Add-Content -Path $UnattendPath -Value ('            <InputLocale>0804:{81D4E9C9-1D3B-41BC-9E6C-4B40BF79E35E}' + `
-            '{FA550B04-5AD7-411f-A5AC-CA038EC515D7}</InputLocale>')
-}
-else {
-    Add-Content -Path $UnattendPath -Value '            <InputLocale>0409:00000409</InputLocale>'
-}
+Add-Content -Path $UnattendPath -Value "            <InputLocale>$Language</InputLocale>"
 Add-Content -Path $UnattendPath -Value "            <UILanguage>$Language</UILanguage>"
 Add-Content -Path $UnattendPath -Value "            <SystemLocale>$Language</SystemLocale>"
 Add-Content -Path $UnattendPath -Value "            <UserLocale>$Language</UserLocale>"
@@ -1208,7 +1262,6 @@ if ($WindowsProductName) {
     $key = $ProductInfo['gvlk']
     Add-Content -Path $UnattendPath -Value '                <ProductKey>'
     Add-Content -Path $UnattendPath -Value "                    <Key>$key</Key>"
-    Add-Content -Path $UnattendPath -Value '                    <WillShowUI>Never</WillShowUI>'
     Add-Content -Path $UnattendPath -Value '                </ProductKey>'
 }
 Add-Content -Path $UnattendPath -Value '            </UserData>'
@@ -1265,8 +1318,12 @@ elseif (!$NotFormat) {
     Add-Content -Path $UnattendPath -Value ''
     Add-Content -Path $UnattendPath -Value '                    <ModifyPartitions>'
     Add-Content -Path $UnattendPath -Value '                        <ModifyPartition wcm:action="add">'
+    if ($PartitionStyle -ieq 'MBR') {
+        Add-Content -Path $UnattendPath -Value '                            <Active>true</Active>'
+    }
     Add-Content -Path $UnattendPath -Value '                            <Format>NTFS</Format>'
-    Add-Content -Path $UnattendPath -Value "                            <PartitionID>$PartitionID</PartitionID>"
+    Add-Content -Path $UnattendPath -Value '                            <Order>1</Order>'
+    Add-Content -Path $UnattendPath -Value "                            <PartitionID>$PartitionId</PartitionID>"
     Add-Content -Path $UnattendPath -Value '                        </ModifyPartition>'
     Add-Content -Path $UnattendPath -Value '                    </ModifyPartitions>'
     Add-Content -Path $UnattendPath -Value '                </Disk>'
@@ -1276,12 +1333,7 @@ elseif (!$NotFormat) {
 Add-Content -Path $UnattendPath -Value '            <ImageInstall>'
 Add-Content -Path $UnattendPath -Value '                <OSImage>'
 if ($WindowsProductName) {
-    if ($Language -ieq 'zh-CN') {
-        $ImageName = 'Windows ' + $OsVersion + ' ' + $ProductInfo['CN']
-    }
-    else {
-        $ImageName = 'Windows ' + $OsVersion + ' ' + $ProductInfo['US']
-    }
+    $ImageName = 'Windows ' + $OsVersion + ' ' + $ProductInfo['US']
     Add-Content -Path $UnattendPath -Value '                    <InstallFrom>'
     Add-Content -Path $UnattendPath -Value '                        <MetaData wcm:action="add">'
     Add-Content -Path $UnattendPath -Value '                            <Key>/IMAGE/NAME</Key>'
@@ -1293,7 +1345,7 @@ if ($WindowsProductName) {
 
 Add-Content -Path $UnattendPath -Value '                    <InstallTo>'
 Add-Content -Path $UnattendPath -Value "                        <DiskID>$DiskId</DiskID>"
-Add-Content -Path $UnattendPath -Value "                        <PartitionID>$PartitionID</PartitionID>"
+Add-Content -Path $UnattendPath -Value "                        <PartitionID>$PartitionId</PartitionID>"
 Add-Content -Path $UnattendPath -Value '                    </InstallTo>'
 Add-Content -Path $UnattendPath -Value '                </OSImage>'
 Add-Content -Path $UnattendPath -Value '            </ImageInstall>'
@@ -1301,23 +1353,6 @@ Add-Content -Path $UnattendPath -Value '        </component>'
 Add-Content -Path $UnattendPath -Value '    </settings>'
 Add-Content -Path $UnattendPath -Value ''
 Add-Content -Path $UnattendPath -Value '    <settings pass="specialize">'
-Add-Content -Path $UnattendPath -Value ("        <component name=`"Microsoft-Windows-International-Core`"" `
-        + " processorArchitecture=`"$ArchitectureName`" publicKeyToken=`"$Token`" language=`"neutral`"" `
-        + " versionScope=`"nonSxS`" xmlns:wcm=`"http://schemas.microsoft.com/WMIConfig/2002/State`"" `
-        + " xmlns:xsi=`"http://www.w3.org/2001/XMLSchema-instance`">")
-if ('zh-CN' -eq $Language) {
-    Add-Content -Path $UnattendPath -Value ('            <InputLocale>0804:{81D4E9C9-1D3B-41BC-9E6C-4B40BF79E35E}' + `
-            '{FA550B04-5AD7-411f-A5AC-CA038EC515D7}</InputLocale>')
-}
-else {
-    Add-Content -Path $UnattendPath -Value '            <InputLocale>0409:00000409</InputLocale>'
-}
-Add-Content -Path $UnattendPath -Value "            <UILanguage>$Language</UILanguage>"
-Add-Content -Path $UnattendPath -Value "            <SystemLocale>$Language</SystemLocale>"
-Add-Content -Path $UnattendPath -Value "            <UserLocale>$Language</UserLocale>"
-Add-Content -Path $UnattendPath -Value "            <UILanguageFallback>$Language</UILanguageFallback>"
-Add-Content -Path $UnattendPath -Value '        </component>'
-Add-Content -Path $UnattendPath -Value ''
 Add-Content -Path $UnattendPath -Value ("        <component name=`"Microsoft-Windows-Security-SPP-UX`"" `
         + " processorArchitecture=`"$ArchitectureName`" publicKeyToken=`"$Token`" language=`"neutral`"" `
         + " versionScope=`"nonSxS`" xmlns:wcm=`"http://schemas.microsoft.com/WMIConfig/2002/State`"" `
@@ -1344,6 +1379,17 @@ if ($WindowsProductName) {
 Add-Content -Path $UnattendPath -Value '    </settings>'
 Add-Content -Path $UnattendPath -Value ''
 Add-Content -Path $UnattendPath -Value '    <settings pass="oobeSystem">'
+Add-Content -Path $UnattendPath -Value ("        <component name=`"Microsoft-Windows-International-Core`"" `
+        + " processorArchitecture=`"$ArchitectureName`" publicKeyToken=`"$Token`" language=`"neutral`"" `
+        + " versionScope=`"nonSxS`" xmlns:wcm=`"http://schemas.microsoft.com/WMIConfig/2002/State`"" `
+        + " xmlns:xsi=`"http://www.w3.org/2001/XMLSchema-instance`">")
+Add-Content -Path $UnattendPath -Value "            <InputLocale>$Language</InputLocale>"
+Add-Content -Path $UnattendPath -Value "            <UILanguage>$Language</UILanguage>"
+Add-Content -Path $UnattendPath -Value "            <SystemLocale>$Language</SystemLocale>"
+Add-Content -Path $UnattendPath -Value "            <UserLocale>$Language</UserLocale>"
+Add-Content -Path $UnattendPath -Value "            <UILanguageFallback>$Language</UILanguageFallback>"
+Add-Content -Path $UnattendPath -Value '        </component>'
+Add-Content -Path $UnattendPath -Value ''
 Add-Content -Path $UnattendPath -Value ("        <component name=`"Microsoft-Windows-Shell-Setup`"" `
         + " processorArchitecture=`"$ArchitectureName`" publicKeyToken=`"$Token`" language=`"neutral`"" `
         + " versionScope=`"nonSxS`" xmlns:wcm=`"http://schemas.microsoft.com/WMIConfig/2002/State`"" `
@@ -1383,13 +1429,6 @@ Add-Content -Path $UnattendPath -Value '                <HideWirelessSetupInOOBE
 Add-Content -Path $UnattendPath -Value '                <HideLocalAccountScreen>true</HideLocalAccountScreen>'
 Add-Content -Path $UnattendPath -Value '                <ProtectYourPC>3</ProtectYourPC>'
 Add-Content -Path $UnattendPath -Value '            </OOBE>'
-Add-Content -Path $UnattendPath -Value ''
-if ($Language -ieq 'zh-CN') {
-    Add-Content -Path $UnattendPath -Value '            <TimeZone>China Standard Time</TimeZone>'
-}
-else {
-    Add-Content -Path $UnattendPath -Value '            <TimeZone>Pacific Standard Time</TimeZone>'
-}
 Add-Content -Path $UnattendPath -Value '        </component>'
 Add-Content -Path $UnattendPath -Value '    </settings>'
 Add-Content -Path $UnattendPath -Value '</unattend>'
@@ -1397,3 +1436,4 @@ Add-Content -Path $UnattendPath -Value '</unattend>'
 Write-Host -Object ('生成的应答文件位置: ' + $UnattendPath)
 Write-Host -Object ''
 Read-Host -Prompt '按回车键关闭此窗口'
+
