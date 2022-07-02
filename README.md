@@ -36,11 +36,20 @@
 
 ## 和 Venoty 一起使用
 
-* 准备一个 U 盘，用 Ventoy 处理，详见：https://www.ventoy.net/cn/doc_start.html
-* 把应答文件复制到 U 盘
-* 修改 U 盘下的 Ventoy 配置文件 `ventoy\ventoy.json`，详见：https://www.ventoy.net/cn/plugin_autoinstall.html
-* U 盘插入要安装系统的电脑，该电脑关机，进入 BIOS，修改为启动进入 U 盘
-* 进入 Ventoy 选择镜像的页面，选择要安装的镜像，选择要使用的应答文件
+如下步骤 3 和步骤 4 可通过本工具完成
+
+1. 准备一个 U 盘，用 Ventoy 制作成启动盘，详见：https://www.ventoy.net/cn/doc_start.html
+2. 把 Windows 系统 ISO 镜像文件复制到 U 盘
+3. 把应答文件复制到 U 盘
+4. 修改 U 盘下的 Ventoy 配置文件 `ventoy\ventoy.json`，让镜像文件关联应答文件，详见：https://www.ventoy.net/cn/plugin_autoinstall.html
+5. U 盘插入要安装系统的电脑，该电脑关机重启，进入 BIOS，修改为启动进入 U 盘
+6. 进入 Ventoy 选择镜像的页面，选择要安装的镜像，选择要使用的应答文件
+
+## 和 setup.exe 一起使用
+
+1. 把 Windows 系统 ISO 镜像文件解压到指定目录
+2. 把应答文件复制到解压后的目录
+3. 进入解压后的目录，命令行下运行 `setup.exe /unattend:应答文件名称` 即可安装系统
 
 # 支持的选项
 
