@@ -534,19 +534,19 @@ function ShowCreatePartition {
                 'Extend'     = $false;
                 'IsHidden'   = $true;
                 'IsBoot'     = $false
-            };
-            '2' = @{
-                'Order'      = 2;
-                'Size'       = 128;
-                'Type'       = 'MSR';
-                'TypeName'   = '微软保留分区';
-                'FileSystem' = '';
-                'Extend'     = $false;
-                'IsHidden'   = $true;
-                'IsBoot'     = $false
             }
+            #'2' = @{
+            #    'Order'      = 2;
+            #    'Size'       = 128;
+            #    'Type'       = 'MSR';
+            #    'TypeName'   = '微软保留分区';
+            #    'FileSystem' = '';
+            #    'Extend'     = $false;
+            #    'IsHidden'   = $true;
+            #    'IsBoot'     = $false
+            #}
         }
-        $PartitionNumber = 2
+        $PartitionNumber = 1
         Write-Host -Object '==============='
         Write-Host -Object '创建新 GPT 分区'
         Write-Host -Object '==============='
