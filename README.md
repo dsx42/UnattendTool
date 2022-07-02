@@ -64,6 +64,7 @@
     [-PartitionID int]
     [-PartitionStyle String]
     [-FullName String]
+    [-Password String]
     [-VentoyDriverLetter String]
     [-ISOPath String]
     [-NotFormat]
@@ -93,6 +94,7 @@
     * `GPT`：GPT 分区；默认值
     * `MBR`：MBR 分区
 * `-FullName String`：系统安装后的登录账号名；推荐英文字母或数字的组合，尽量不使用中文或其他特殊字符；默认为 `'MyPC'`
+* `-Password String`：系统安装后的登录账号密码；推荐不设置密码，系统安装后再自行设置密码；默认无密码
 * `-VentoyDriverLetter String`：已安装 Ventoy 的 U 盘驱动器；默认为当前用户的桌面
 * `-ISOPath String`：使用应答文件的 ISO 镜像文件的路径；默认未指定
 * `-NotFormat`：安装系统时不格式化所选硬盘分区；默认安装时会格式化所选硬盘分区

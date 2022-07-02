@@ -7,6 +7,7 @@
     $PartitionId = -1,
     $PartitionStyle = 'GPT',
     $FullName = 'MyPC',
+    $Password = '',
     $VentoyDriverLetter = '',
     $ISOPath = '',
     [switch]$Interactive,
@@ -785,6 +786,24 @@ function ShowNameInput {
     }
 }
 
+function ShowPasswordInput {
+
+    Write-Host -Object '======================================================================'
+    Write-Host -Object '输入系统安装后的登录账号密码，推荐不设置密码，系统安装后再自行设置密码'
+    Write-Host -Object '======================================================================'
+    Write-Host -Object ''
+
+    $InputOption = Read-Host -Prompt '请输入登录账号密码(默认无密码)，按回车键确认'
+    if ($InputOption -ieq '') {
+        Write-Host -Object ''
+        return ''
+    }
+    else {
+        Write-Host -Object ''
+        return $InputOption
+    }
+}
+
 function ShowVentoyDriverLetterSelect {
 
     $CurrentDisks = GetCurrentDisk
@@ -1111,6 +1130,7 @@ if ($Interactive) {
         }
     }
     $FullName = ShowNameInput
+    $Password = ShowPasswordInput
     $VentoyDriverLetter = ShowVentoyDriverLetterSelect
     if ($VentoyDriverLetter) {
         $ISOPath = ShowGetISOPath -Path $VentoyDriverLetter
@@ -1397,7 +1417,12 @@ Add-Content -Path $UnattendPath -Value ("        <component name=`"Microsoft-Win
 if ($FullName) {
     Add-Content -Path $UnattendPath -Value '            <AutoLogon>'
     Add-Content -Path $UnattendPath -Value '                <Password>'
-    Add-Content -Path $UnattendPath -Value '                    <Value/>'
+    if ($Password) {
+        Add-Content -Path $UnattendPath -Value "                    <Value>$Password</Value>"
+    }
+    else {
+        Add-Content -Path $UnattendPath -Value '                    <Value/>'
+    }
     Add-Content -Path $UnattendPath -Value '                    <PlainText>true</PlainText>'
     Add-Content -Path $UnattendPath -Value '                </Password>'
     Add-Content -Path $UnattendPath -Value '                <Enabled>true</Enabled>'
@@ -1408,7 +1433,12 @@ if ($FullName) {
     Add-Content -Path $UnattendPath -Value '                <LocalAccounts>'
     Add-Content -Path $UnattendPath -Value '                    <LocalAccount wcm:action="add">'
     Add-Content -Path $UnattendPath -Value '                        <Password>'
-    Add-Content -Path $UnattendPath -Value '                            <Value/>'
+    if ($Password) {
+        Add-Content -Path $UnattendPath -Value "                            <Value>$Password</Value>"
+    }
+    else {
+        Add-Content -Path $UnattendPath -Value '                            <Value/>'
+    }
     Add-Content -Path $UnattendPath -Value '                            <PlainText>true</PlainText>'
     Add-Content -Path $UnattendPath -Value '                        </Password>'
     Add-Content -Path $UnattendPath -Value "                        <DisplayName>$FullName</DisplayName>"
@@ -1443,5 +1473,6 @@ Add-Content -Path $UnattendPath -Value '</unattend>'
 
 Write-Host -Object ('生成的应答文件位置: ' + $UnattendPath)
 Write-Host -Object ''
-Read-Host -Prompt '按回车键关闭此窗口'
-
+if ($Interactive) {
+    Read-Host -Prompt '按回车键关闭此窗口'
+}
