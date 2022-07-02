@@ -1,6 +1,9 @@
 {
     "name": "UnattendTool",
-    "version": "2022.6.30",
+    "author": "dsx42",
+    "license": "GPL-3.0",
+    "home": "https://github.com/dsx42/UnattendTool",
+    "version": "2022.7.2",
     "files": [
         "UnattendTool.cmd",
         "UnattendTool.ps1",

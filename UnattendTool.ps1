@@ -1429,6 +1429,14 @@ Add-Content -Path $UnattendPath -Value '                <HideWirelessSetupInOOBE
 Add-Content -Path $UnattendPath -Value '                <HideLocalAccountScreen>true</HideLocalAccountScreen>'
 Add-Content -Path $UnattendPath -Value '                <ProtectYourPC>3</ProtectYourPC>'
 Add-Content -Path $UnattendPath -Value '            </OOBE>'
+Add-Content -Path $UnattendPath -Value ''
+Add-Content -Path $UnattendPath -Value '            <FirstLogonCommands>'
+Add-Content -Path $UnattendPath -Value '                <SynchronousCommand wcm:action="add">'
+Add-Content -Path $UnattendPath -Value ('                    <CommandLine>cmd /c del /f /q %WINDIR%\Panther' + `
+        '\unattend.xml</CommandLine>')
+Add-Content -Path $UnattendPath -Value '                    <Order>1</Order>'
+Add-Content -Path $UnattendPath -Value '                </SynchronousCommand>'
+Add-Content -Path $UnattendPath -Value '            </FirstLogonCommands>'
 Add-Content -Path $UnattendPath -Value '        </component>'
 Add-Content -Path $UnattendPath -Value '    </settings>'
 Add-Content -Path $UnattendPath -Value '</unattend>'
