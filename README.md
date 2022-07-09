@@ -101,7 +101,7 @@
 * `-PartitionID int`：要安装系统的分区编号，分区编号从 1 开始；默认为 -1，表示自动选择当前操作系统所在的分区
 * `-PartitionStyle String`：未指定 `-NotFormat` 时，需要指定该参数，表示要安装系统的硬盘的分区类型，只支持如下两个值：
     * `GPT`：GPT 分区；默认值
-    * `MBR`：MBR 分区
+    * `MBR`：MBR 分区；注意，Windows 11 官方镜像不支持 `MBR` 分区
 * `-FullName String`：系统安装后的登录账号名；推荐英文字母或数字的组合，尽量不使用中文或其他特殊字符；默认为 `'MyPC'`
 * `-Password String`：系统安装后的登录账号密码；推荐不设置密码，系统安装后再自行设置密码；默认无密码
 * `-VentoyDriverLetter String`：已安装 Ventoy 的 U 盘驱动器；默认为当前用户的桌面

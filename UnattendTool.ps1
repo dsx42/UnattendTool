@@ -1070,9 +1070,10 @@ if ($Version) {
 
 Clear-Host
 $PSDefaultParameterValues['*:Encoding'] = 'utf8'
-$Host.UI.RawUI.WindowTitle = 'Windows 应答文件生成'
+$Host.UI.RawUI.WindowTitle = "UnattendTool v$VersionInfo"
 Set-Location -Path $PSScriptRoot
-Write-Host -Object "=====> Windows 系统自动安装应答文件生成 v$VersionInfo <====="
+Write-Host -Object ''
+Write-Host -Object '=====> https://github.com/dsx42/UnattendTool <====='
 Write-Host -Object ''
 
 $WipeDisk = 0
@@ -1088,7 +1089,7 @@ $WindowsProduct = [ordered]@{
         'CN'          = '教育版';
         'US'          = 'Education';
         'NoSpaceName' = 'Education';
-        'gvlk'        = '6TP4R-GNPTD-KYYHQ-7B7DP-J447Y'
+        'gvlk'        = 'NW6C2-QMPVW-D7KKK-3GKT6-VCFB2'
     };
     'Pro'                  = @{
         'CN'          = '专业版';
@@ -1251,6 +1252,11 @@ if (Test-Path -Path $UnattendPath -PathType Leaf) {
     Remove-Item -Path $UnattendPath -Force
 }
 Add-Content -Path $UnattendPath -Value '<?xml version="1.0" encoding="utf-8"?>'
+Add-Content -Path $UnattendPath -Value ''
+Add-Content -Path $UnattendPath -Value "<!-- UnattendTool v$VersionInfo -->"
+Add-Content -Path $UnattendPath -Value '<!-- 开源协议: GPL-3.0 -->'
+Add-Content -Path $UnattendPath -Value '<!-- 官网: https://github.com/dsx42/UnattendTool -->'
+Add-Content -Path $UnattendPath -Value ''
 Add-Content -Path $UnattendPath -Value '<unattend xmlns="urn:schemas-microsoft-com:unattend">'
 Add-Content -Path $UnattendPath -Value '    <settings pass="windowsPE">'
 Add-Content -Path $UnattendPath -Value ("        <component name=`"Microsoft-Windows-International-Core-WinPE`"" `
