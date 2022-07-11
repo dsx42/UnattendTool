@@ -872,7 +872,8 @@ function ShowGetISOPath {
     $ISOFiles = [ordered]@{}
     $Index = 0;
     try {
-        Get-ChildItem -Path $Path -Include '*.iso' -Recurse -File -ErrorAction SilentlyContinue | ForEach-Object {
+        Get-ChildItem -Path $Path -Include '*.iso' -Recurse -Depth 1 -File -ErrorAction SilentlyContinue | `
+            ForEach-Object {
             $Index = $Index + 1
             $ISOFiles.Add([System.String]$Index, $_.FullName)
         }
@@ -1073,7 +1074,7 @@ $PSDefaultParameterValues['*:Encoding'] = 'utf8'
 $Host.UI.RawUI.WindowTitle = "UnattendTool v$VersionInfo"
 Set-Location -Path $PSScriptRoot
 Write-Host -Object ''
-Write-Host -Object '=====> https://github.com/dsx42/UnattendTool <====='
+Write-Host -Object "=====> UnattendTool v$VersionInfo https://github.com/dsx42/UnattendTool <====="
 Write-Host -Object ''
 
 $WipeDisk = 0
