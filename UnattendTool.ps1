@@ -697,21 +697,21 @@ function ShowPartitionIdSelect {
 function ShowFomatSelect {
 
     Write-Host -Object '================================'
-    Write-Host -Object '选择是否对所选分区格式化，推荐 2'
+    Write-Host -Object '选择是否对所选分区格式化，推荐 1'
     Write-Host -Object '================================'
     Write-Host -Object ''
-    Write-Host -Object '1: 否'
+    Write-Host -Object '0: 否'
     Write-Host -Object ''
-    Write-Host -Object '2: 是，注意：安装系统时会清除所选分区的数据，请及时备份所选分区的数据' -ForegroundColor Red
+    Write-Host -Object '1: 是，注意：安装系统时会清除所选分区的数据，请及时备份所选分区的数据' -ForegroundColor Red
 
     while ($true) {
         Write-Host -Object ''
-        $InputOption = Read-Host -Prompt '请输入选择的序号(默认为 2)，按回车键确认'
-        if ($InputOption -ieq '' -or $InputOption -ieq '2') {
+        $InputOption = Read-Host -Prompt '请输入选择的序号(默认为 1)，按回车键确认'
+        if ($InputOption -ieq '' -or $InputOption -ieq '1') {
             Write-Host -Object ''
             return $true
         }
-        elseif ($InputOption -ieq '1') {
+        elseif ($InputOption -ieq '0') {
             Write-Host -Object ''
             return $false
         }
@@ -872,7 +872,7 @@ function ShowGetISOPath {
     $ISOFiles = [ordered]@{}
     $Index = 0;
     try {
-        Get-ChildItem -Path $Path -Include '*.iso' -Recurse -Depth 1 -File -ErrorAction SilentlyContinue | `
+        Get-ChildItem -Path $Path -Filter '*.iso' -Recurse -Depth 1 -File -ErrorAction SilentlyContinue | `
             ForEach-Object {
             $Index = $Index + 1
             $ISOFiles.Add([System.String]$Index, $_.FullName)
