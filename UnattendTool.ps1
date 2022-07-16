@@ -1501,10 +1501,18 @@ Add-Content -Path $UnattendPath -Value '            </OOBE>'
 Add-Content -Path $UnattendPath -Value ''
 Add-Content -Path $UnattendPath -Value '            <FirstLogonCommands>'
 Add-Content -Path $UnattendPath -Value '                <SynchronousCommand wcm:action="add">'
-Add-Content -Path $UnattendPath -Value ('                    <CommandLine>cmd /c del /f /q %WINDIR%\Panther' + `
-        '\unattend.xml</CommandLine>')
 Add-Content -Path $UnattendPath -Value '                    <Order>1</Order>'
+Add-Content -Path $UnattendPath -Value ('                    <CommandLine>cmd /C del /f /q %WINDIR%\Panther' `
+        + '\unattend.xml</CommandLine>')
 Add-Content -Path $UnattendPath -Value '                </SynchronousCommand>'
+if ($Password) {
+    Add-Content -Path $UnattendPath -Value ''
+    Add-Content -Path $UnattendPath -Value '                <SynchronousCommand wcm:action="add">'
+    Add-Content -Path $UnattendPath -Value '                    <Order>2</Order>'
+    Add-Content -Path $UnattendPath -Value ('                    <CommandLine>cmd /C wmic useraccount' `
+            + " where 'Name=`"$FullName`"' set PasswordExpires=false</CommandLine>")
+    Add-Content -Path $UnattendPath -Value '                </SynchronousCommand>'
+}
 Add-Content -Path $UnattendPath -Value '            </FirstLogonCommands>'
 Add-Content -Path $UnattendPath -Value '        </component>'
 Add-Content -Path $UnattendPath -Value '    </settings>'
