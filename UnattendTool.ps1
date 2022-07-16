@@ -1271,13 +1271,46 @@ Add-Content -Path $UnattendPath -Value "            <InputLocale>$Language</Inpu
 Add-Content -Path $UnattendPath -Value "            <UILanguage>$Language</UILanguage>"
 Add-Content -Path $UnattendPath -Value "            <SystemLocale>$Language</SystemLocale>"
 Add-Content -Path $UnattendPath -Value "            <UserLocale>$Language</UserLocale>"
-Add-Content -Path $UnattendPath -Value "            <UILanguageFallback>$Language</UILanguageFallback>"
 Add-Content -Path $UnattendPath -Value '        </component>'
 Add-Content -Path $UnattendPath -Value ''
 Add-Content -Path $UnattendPath -Value ("        <component name=`"Microsoft-Windows-Setup`"" `
         + " processorArchitecture=`"$ArchitectureName`" publicKeyToken=`"$Token`" language=`"neutral`"" `
         + " versionScope=`"nonSxS`" xmlns:wcm=`"http://schemas.microsoft.com/WMIConfig/2002/State`"" `
         + " xmlns:xsi=`"http://www.w3.org/2001/XMLSchema-instance`">")
+if (11 -eq $OsVersion) {
+    Add-Content -Path $UnattendPath -Value '            <RunSynchronous>'
+    Add-Content -Path $UnattendPath -Value '                <RunSynchronousCommand wcm:action="add">'
+    Add-Content -Path $UnattendPath -Value '                    <Order>1</Order>'
+    Add-Content -Path $UnattendPath -Value ('                    <Path>reg add "HKLM\System\Setup\LabConfig"' `
+            + ' /v "BypassTPMCheck" /t REG_DWORD /d "1" /f</Path>')
+    Add-Content -Path $UnattendPath -Value '                </RunSynchronousCommand>'
+    Add-Content -Path $UnattendPath -Value ''
+    Add-Content -Path $UnattendPath -Value '                <RunSynchronousCommand wcm:action="add">'
+    Add-Content -Path $UnattendPath -Value '                    <Order>2</Order>'
+    Add-Content -Path $UnattendPath -Value ('                    <Path>reg add "HKLM\System\Setup\LabConfig"' `
+            + ' /v "BypassSecureBootCheck" /t REG_DWORD /d "1" /f</Path>')
+    Add-Content -Path $UnattendPath -Value '                </RunSynchronousCommand>'
+    Add-Content -Path $UnattendPath -Value ''
+    Add-Content -Path $UnattendPath -Value '                <RunSynchronousCommand wcm:action="add">'
+    Add-Content -Path $UnattendPath -Value '                    <Order>3</Order>'
+    Add-Content -Path $UnattendPath -Value ('                    <Path>reg add "HKLM\System\Setup\LabConfig"' `
+            + ' /v "BypassRAMCheck" /t REG_DWORD /d "1" /f</Path>')
+    Add-Content -Path $UnattendPath -Value '                </RunSynchronousCommand>'
+    Add-Content -Path $UnattendPath -Value ''
+    Add-Content -Path $UnattendPath -Value '                <RunSynchronousCommand wcm:action="add">'
+    Add-Content -Path $UnattendPath -Value '                    <Order>4</Order>'
+    Add-Content -Path $UnattendPath -Value ('                    <Path>reg add "HKLM\System\Setup\LabConfig"' `
+            + ' /v "BypassStorageCheck" /t REG_DWORD /d "1" /f</Path>')
+    Add-Content -Path $UnattendPath -Value '                </RunSynchronousCommand>'
+    Add-Content -Path $UnattendPath -Value ''
+    Add-Content -Path $UnattendPath -Value '                <RunSynchronousCommand wcm:action="add">'
+    Add-Content -Path $UnattendPath -Value '                    <Order>5</Order>'
+    Add-Content -Path $UnattendPath -Value ('                    <Path>reg add "HKLM\System\Setup\LabConfig"' `
+            + ' /v "BypassCPUCheck" /t REG_DWORD /d "1" /f</Path>')
+    Add-Content -Path $UnattendPath -Value '                </RunSynchronousCommand>'
+    Add-Content -Path $UnattendPath -Value '            </RunSynchronous>'
+    Add-Content -Path $UnattendPath -Value ''
+}
 Add-Content -Path $UnattendPath -Value '            <EnableNetwork>false</EnableNetwork>'
 Add-Content -Path $UnattendPath -Value ''
 Add-Content -Path $UnattendPath -Value '            <UserData>'
@@ -1414,7 +1447,6 @@ Add-Content -Path $UnattendPath -Value "            <InputLocale>$Language</Inpu
 Add-Content -Path $UnattendPath -Value "            <UILanguage>$Language</UILanguage>"
 Add-Content -Path $UnattendPath -Value "            <SystemLocale>$Language</SystemLocale>"
 Add-Content -Path $UnattendPath -Value "            <UserLocale>$Language</UserLocale>"
-Add-Content -Path $UnattendPath -Value "            <UILanguageFallback>$Language</UILanguageFallback>"
 Add-Content -Path $UnattendPath -Value '        </component>'
 Add-Content -Path $UnattendPath -Value ''
 Add-Content -Path $UnattendPath -Value ("        <component name=`"Microsoft-Windows-Shell-Setup`"" `
