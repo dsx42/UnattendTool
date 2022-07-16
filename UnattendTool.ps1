@@ -8,7 +8,7 @@
     $PartitionStyle = 'GPT',
     $FullName = 'MyPC',
     $Password = '',
-    $VentoyDriverLetter = '',
+    $DriverLetter = '',
     $ISOPath = '',
     [switch]$Interactive,
     [switch]$NotFormat,
@@ -804,13 +804,13 @@ function ShowPasswordInput {
     }
 }
 
-function ShowVentoyDriverLetterSelect {
+function ShowDriverLetterSelect {
 
     $CurrentDisks = GetCurrentDisk
 
-    Write-Host -Object '==============================='
-    Write-Host -Object '输入已安装 Ventoy 的 U 盘驱动器'
-    Write-Host -Object '==============================='
+    Write-Host -Object '======================================='
+    Write-Host -Object '输入 U 盘启动盘盘符或者镜像文件所在目录'
+    Write-Host -Object '======================================='
     Write-Host -Object ''
     Write-Host -Object '当前系统识别到的驱动器如下：'
 
@@ -836,7 +836,7 @@ function ShowVentoyDriverLetterSelect {
     while ($true) {
         Write-Host -Object ''
         $InputOption = Read-Host `
-            -Prompt '请输入已安装 Ventoy 的 U 盘驱动器(0 表示将应答文件保存到当前用户的桌面上)，按回车键确认'
+            -Prompt '请输入 U 盘启动盘盘符或者镜像文件所在目录(0 表示将应答文件保存到当前用户的桌面上)，按回车键确认'
         if ($InputOption -ieq '') {
             Write-Host -Object ''
             Write-Warning -Message '选择无效，请重新输入'
@@ -855,7 +855,7 @@ function ShowVentoyDriverLetterSelect {
         }
         else {
             Write-Host -Object ''
-            Write-Warning -Message '驱动器不存在，请重新输入'
+            Write-Warning -Message '输入路径不存在，请重新输入'
         }
     }
 }
@@ -1133,9 +1133,9 @@ if ($Interactive) {
     }
     $FullName = ShowNameInput
     $Password = ShowPasswordInput
-    $VentoyDriverLetter = ShowVentoyDriverLetterSelect
-    if ($VentoyDriverLetter) {
-        $ISOPath = ShowGetISOPath -Path $VentoyDriverLetter
+    $DriverLetter = ShowDriverLetterSelect
+    if ($DriverLetter) {
+        $ISOPath = ShowGetISOPath -Path $DriverLetter
     }
 }
 
@@ -1201,50 +1201,100 @@ elseif ($PartitionStyle -ieq 'MBR') {
     $PartitionStyle = 'MBR'
 }
 
-if ('' -ieq $VentoyDriverLetter) {
+if ('' -ieq $DriverLetter) {
     $ParentPath = GetDefaultFolderPath
 }
 else {
-    $ParentPath = $VentoyDriverLetter
+    $ParentPath = $DriverLetter
     if ($ISOPath) {
         $Letter1 = Split-Path -Path $ISOPath -Qualifier
         $Letter2 = Split-Path -Path $ISOPath -Qualifier
         if ($Letter1 -ine $Letter2) {
-            Write-Warning -Message '参数 ISOPath 指定的路径必须和参数 VentoyDriverLetter 指定的驱动器属于同一个驱动器'
+            Write-Warning -Message '参数 ISOPath 指定的路径必须和参数 DriverLetter 指定的驱动器属于同一个驱动器'
             [System.Environment]::Exit(0)
         }
     }
 }
 
-$VentoyConfigParentPath = Join-Path -Path $ParentPath -ChildPath 'ventoy'
-if (!$(Test-Path -Path $VentoyConfigParentPath -PathType Container)) {
-    New-Item -Path $VentoyConfigParentPath -ItemType Directory -Force | Out-Null
-}
-$VentoyConfigScriptPath = Join-Path -Path $VentoyConfigParentPath -ChildPath 'script'
-if (!$(Test-Path -Path $VentoyConfigScriptPath -PathType Container)) {
-    New-Item -Path $VentoyConfigScriptPath -ItemType Directory -Force | Out-Null
+$ProductInfo = @{}
+if ($WindowsProductName) {
+    $ProductInfo = $WindowsProduct[$WindowsProductName]
 }
 
-$DiskTypeStr = ''
-if ($WipeDisk -eq 1) {
-    $DiskTypeStr = '_CreateGPT'
+$UnattendName = 'Autounattend'
+if ($ISOPath) {
+    $VentoyConfigParentPath = Join-Path -Path $ParentPath -ChildPath 'ventoy'
+    if (!$(Test-Path -Path $VentoyConfigParentPath -PathType Container)) {
+        New-Item -Path $VentoyConfigParentPath -ItemType Directory -Force | Out-Null
+    }
 }
-elseif ($WipeDisk -eq 2) {
-    $DiskTypeStr = '_CreateMBR'
-}
-elseif (!$NotFormat) {
-    $DiskTypeStr = "_Format$PartitionStyle"
-}
-$ProductInfo = @{}
-if ('' -ieq $WindowsProductName) {
-    $UnattendPath = $VentoyConfigScriptPath + '\Unattend_Windows_' + $OsVersion + '_' + $Architecture + '_' `
-        + $Language + $DiskTypeStr + '_' + $FullName + '.xml'
+if (!(Test-Path -Path "$ParentPath\setup.exe" -PathType Leaf)) {
+    $VentoyConfigScriptPath = Join-Path -Path $ParentPath -ChildPath 'script'
+    if (!$(Test-Path -Path $VentoyConfigScriptPath -PathType Container)) {
+        New-Item -Path $VentoyConfigScriptPath -ItemType Directory -Force | Out-Null
+    }
+
+    $DiskTypeStr = ''
+    if ($WipeDisk -eq 1) {
+        $DiskTypeStr = '_CreateGPT'
+    }
+    elseif ($WipeDisk -eq 2) {
+        $DiskTypeStr = '_CreateMBR'
+    }
+    elseif (!$NotFormat) {
+        $DiskTypeStr = "_Format$PartitionStyle"
+    }
+    
+    if ('' -ieq $WindowsProductName) {
+        $UnattendName = 'Unattend_Windows_' + $OsVersion + '_' + $Architecture + '_' `
+            + $Language + $DiskTypeStr + '_' + $FullName
+    }
+    else {
+        $NoSpaceName = $ProductInfo['NoSpaceName']
+        $UnattendName = 'Unattend_Windows_' + $OsVersion + '_' + $NoSpaceName + '_' `
+            + $Architecture + '_' + $Language + $DiskTypeStr + '_' + $FullName
+    }
+    $UnattendPath = "$VentoyConfigScriptPath\$UnattendName.xml"
+
+    Remove-Item -Path "$VentoyConfigScriptPath\Install_$UnattendName.cmd" -Force -ErrorAction SilentlyContinue
+    $GB2312Encoding = [System.Text.Encoding]::GetEncoding('gb2312')
+    $CmdContents = @(
+        '@echo off',
+        ':GetSetupPath',
+        'set /P setupPath=请输入镜像挂载或解压后的目录:',
+        'if not exist %setupPath%\setup.exe (',
+        '    echo.',
+        '    echo 目录 %setupPath% 下不存在 setup.exe，并非镜像挂载或解压后的目录，请重新确认输入',
+        '    echo.',
+        '    goto GetSetupPath',
+        ')'
+    )
+    if (11 -eq $OsVersion) {
+        $CmdContents += 'reg add "HKLM\System\Setup\LabConfig" /v "BypassTPMCheck" /t REG_DWORD /d "1" /f'
+        $CmdContents += 'reg add "HKLM\System\Setup\LabConfig" /v "BypassSecureBootCheck" /t REG_DWORD /d "1" /f'
+        $CmdContents += 'reg add "HKLM\System\Setup\LabConfig" /v "BypassRAMCheck" /t REG_DWORD /d "1" /f'
+        $CmdContents += 'reg add "HKLM\System\Setup\LabConfig" /v "BypassStorageCheck" /t REG_DWORD /d "1" /f'
+        $CmdContents += 'reg add "HKLM\System\Setup\LabConfig" /v "BypassCPUCheck" /t REG_DWORD /d "1" /f'
+    }
+    $CmdContents += "%setupPath%\setup.exe /unattend:%~dp0$UnattendName.xml"
+    [System.IO.File]::WriteAllLines("$VentoyConfigScriptPath\Install_$UnattendName.cmd", $CmdContents, $GB2312Encoding)
 }
 else {
-    $ProductInfo = $WindowsProduct[$WindowsProductName]
-    $NoSpaceName = $ProductInfo['NoSpaceName']
-    $UnattendPath = $VentoyConfigScriptPath + '\Unattend_Windows_' + $OsVersion + '_' + $NoSpaceName + '_' `
-        + $Architecture + '_' + $Language + $DiskTypeStr + '_' + $FullName + '.xml'
+    $UnattendPath = "$ParentPath\$UnattendName.xml"
+    Remove-Item -Path "$ParentPath\Install_Autounattend.cmd" -Force -ErrorAction SilentlyContinue
+    $GB2312Encoding = [System.Text.Encoding]::GetEncoding('gb2312')
+    $CmdContents = @(
+        '@echo off'
+    )
+    if (11 -eq $OsVersion) {
+        $CmdContents += 'reg add "HKLM\System\Setup\LabConfig" /v "BypassTPMCheck" /t REG_DWORD /d "1" /f'
+        $CmdContents += 'reg add "HKLM\System\Setup\LabConfig" /v "BypassSecureBootCheck" /t REG_DWORD /d "1" /f'
+        $CmdContents += 'reg add "HKLM\System\Setup\LabConfig" /v "BypassRAMCheck" /t REG_DWORD /d "1" /f'
+        $CmdContents += 'reg add "HKLM\System\Setup\LabConfig" /v "BypassStorageCheck" /t REG_DWORD /d "1" /f'
+        $CmdContents += 'reg add "HKLM\System\Setup\LabConfig" /v "BypassCPUCheck" /t REG_DWORD /d "1" /f'
+    }
+    $CmdContents += '%~dp0setup.exe /unattend:%~dp0Autounattend.xml'
+    [System.IO.File]::WriteAllLines("$ParentPath\Install_Autounattend.cmd", $CmdContents, $GB2312Encoding)
 }
 
 UpdateVentoyConfig -ISOPath $ISOPath -UnattendPath $UnattendPath -VentoyConfigParentPath $VentoyConfigParentPath

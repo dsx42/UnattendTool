@@ -1,8 +1,11 @@
 # UnattendTool 简介
 
 * 生成 Windows 系统自动安装应答文件 Unattend.xml
-* 支持 Ventoy
 * 只支持 Windows 10 或 Windows 11
+* Windows 11 支持跳过硬件检测
+* 支持 Ventoy 制作的启动盘
+* 支持 Rufus 制作的启动盘
+* 支持微软官方启动盘制作工具 `MediaCreationTool.exe` 制作的启动盘
 
 # 下载
 
@@ -29,27 +32,43 @@
 
 # 生成的应答文件在哪里？
 
-* 默认情况下，在 `%userprofile%\Desktop\ventoy\script\` 目录下
-* 若指定了应答文件目录，则在指定目录下的 `ventoy\script\` 目录下
+* 默认情况下，在 `%userprofile%\Desktop\script\` 目录下
+* 若指定了应答文件目录，则在指定目录下的 `script\` 目录下
+* 若指定目录是镜像文件解压目录，存在 `setup.exe` 文件，则在指定目录下
 
 # 生成的应答文件如何使用？
 
 ## 和 Venoty 一起使用
 
-如下步骤 3 和步骤 4 可通过本工具完成
+在 “输入 U 盘启动盘盘符或者镜像文件所在目录” 时，选择 Ventoy 启动盘的盘符即可
 
-1. 准备一个 U 盘，用 Ventoy 制作成启动盘，详见：https://www.ventoy.net/cn/doc_start.html
-2. 把 Windows 系统 ISO 镜像文件复制到 U 盘
-3. 把应答文件复制到 U 盘
-4. 修改 U 盘下的 Ventoy 配置文件 `ventoy\ventoy.json`，让镜像文件关联应答文件，详见：https://www.ventoy.net/cn/plugin_autoinstall.html
-5. U 盘插入要安装系统的电脑，该电脑关机重启，进入 BIOS，修改为启动进入 U 盘
-6. 进入 Ventoy 选择镜像的页面，选择要安装的镜像，选择要使用的应答文件
+## 镜像文件解压后和 setup.exe 一起使用
 
-## 和 setup.exe 一起使用
+> PE 下也支持
 
-1. 把 Windows 系统 ISO 镜像文件解压到指定目录
-2. 把应答文件复制到解压后的目录
-3. 进入解压后的目录，命令行下运行 `setup.exe /unattend:应答文件名称` 即可安装系统
+在 “输入 U 盘启动盘盘符或者镜像文件所在目录” 时，选择镜像解压文件所在目录，运行生成的 `Install_Autounattend.cmd` 即可
+
+> 原理：镜像解压后的 `setup.exe` 支持指定应答文件 `setup.exe /unattend:应答文件路径`
+
+## 镜像文件挂载后和 setup.exe 一起使用
+
+> PE 下也支持
+
+在 “选择使用应答文件的 ISO 镜像文件” 时，选择镜像文件所在目录，挂载镜像文件后，运行生成的 `script\Install_xxx.cmd` 即可
+
+> 原理：镜像解压后的 `setup.exe` 支持指定应答文件 `setup.exe /unattend:应答文件路径`
+
+## 和 Rufus 一起使用
+
+在 “输入 U 盘启动盘盘符或者镜像文件所在目录” 时，选择 Rufus 启动盘符即可
+
+> 原理：启动盘根目录下存在 `Autounattend.xml` 时，会自动使用 `Autounattend.xml` 应答文件
+
+## 和微软官方启动盘制作工具
+
+在 “输入 U 盘启动盘盘符或者镜像文件所在目录” 时，选择微软官方启动盘制作工具制作的启动盘符即可
+
+> 原理：启动盘根目录下存在 `Autounattend.xml` 时，会自动使用 `Autounattend.xml` 应答文件
 
 # 支持的选项
 
@@ -74,7 +93,7 @@
     [-PartitionStyle String]
     [-FullName String]
     [-Password String]
-    [-VentoyDriverLetter String]
+    [-DriverLetter String]
     [-ISOPath String]
     [-NotFormat]
 ```
@@ -104,7 +123,7 @@
     * `MBR`：MBR 分区；注意，Windows 11 官方镜像不支持 `MBR` 分区
 * `-FullName String`：系统安装后的登录账号名；推荐英文字母或数字的组合，尽量不使用中文或其他特殊字符；默认为 `'MyPC'`
 * `-Password String`：系统安装后的登录账号密码；推荐不设置密码，系统安装后再自行设置密码；默认无密码
-* `-VentoyDriverLetter String`：已安装 Ventoy 的 U 盘驱动器；默认为当前用户的桌面
+* `-DriverLetter String`：U 盘启动盘盘符或者镜像文件所在目录；默认为当前用户的桌面
 * `-ISOPath String`：使用应答文件的 ISO 镜像文件的路径；默认未指定
 * `-NotFormat`：安装系统时不格式化所选硬盘分区；默认安装时会格式化所选硬盘分区
 
