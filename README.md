@@ -3,6 +3,7 @@
 * 生成 Windows 系统自动安装应答文件 Unattend.xml
 * 只支持 Windows 10 或 Windows 11
 * Windows 11 支持跳过硬件检测
+* Windows 11 支持创建本地账户
 * 支持 Ventoy 制作的启动盘
 * 支持 Rufus 制作的启动盘
 * 支持微软官方启动盘制作工具 `MediaCreationTool.exe` 制作的启动盘
