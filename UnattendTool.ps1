@@ -188,6 +188,10 @@ function FormatSize {
 
 function ShowLanguageSelect {
 
+    Clear-Host
+    Write-Host -Object ''
+    Write-Host -Object "=====> UnattendTool v$VersionInfo https://github.com/dsx42/UnattendTool <====="
+    Write-Host -Object ''
     Write-Host -Object '============================'
     Write-Host -Object '选择要安装系统的语言，推荐 1'
     Write-Host -Object '============================'
@@ -216,6 +220,10 @@ function ShowLanguageSelect {
 
 function ShowOsVersionSelect {
 
+    Clear-Host
+    Write-Host -Object ''
+    Write-Host -Object "=====> UnattendTool v$VersionInfo https://github.com/dsx42/UnattendTool <====="
+    Write-Host -Object ''
     Write-Host -Object '============================'
     Write-Host -Object '选择要安装系统的版本，推荐 1'
     Write-Host -Object '============================'
@@ -244,6 +252,10 @@ function ShowOsVersionSelect {
 
 function ShowWindowsProductNameSelect {
 
+    Clear-Host
+    Write-Host -Object ''
+    Write-Host -Object "=====> UnattendTool v$VersionInfo https://github.com/dsx42/UnattendTool <====="
+    Write-Host -Object ''
     Write-Host -Object '============================'
     Write-Host -Object '选择要安装系统的产品，推荐 1'
     Write-Host -Object '============================'
@@ -301,6 +313,10 @@ function ShowArchitectureSelect {
         return 'x64'
     }
 
+    Clear-Host
+    Write-Host -Object ''
+    Write-Host -Object "=====> UnattendTool v$VersionInfo https://github.com/dsx42/UnattendTool <====="
+    Write-Host -Object ''
     Write-Host -Object '============================'
     Write-Host -Object '选择要安装系统的架构，推荐 1'
     Write-Host -Object '============================'
@@ -332,6 +348,10 @@ function ShowDiskIdSelect {
     $SystemDiskId = GetSystemDiskId
     $CurrentDisks = GetCurrentDisk
 
+    Clear-Host
+    Write-Host -Object ''
+    Write-Host -Object "=====> UnattendTool v$VersionInfo https://github.com/dsx42/UnattendTool <====="
+    Write-Host -Object ''
     Write-Host -Object '================================================'
     Write-Host -Object "选择要安装系统的硬盘编号，推荐当前系统所在硬盘 $SystemDiskId"
     Write-Host -Object '================================================'
@@ -397,6 +417,10 @@ function ShowWipeDiskSelect {
     $SelectDisk = $CurrentDisks[$DiskId]
     $DefalultSelect = 0
 
+    Clear-Host
+    Write-Host -Object ''
+    Write-Host -Object "=====> UnattendTool v$VersionInfo https://github.com/dsx42/UnattendTool <====="
+    Write-Host -Object ''
     if ($SelectDisk -and $SelectDisk['PartitionStyle'] -ine 'GPT') {
         Write-Host -Object '=================================='
         Write-Host -Object '选择是否对所选硬盘进行分区，推荐 1'
@@ -490,6 +514,10 @@ function ShowAddNewPartition {
 function ShowIsBoot {
     param($CreatePartitionInfo)
 
+    Clear-Host
+    Write-Host -Object ''
+    Write-Host -Object "=====> UnattendTool v$VersionInfo https://github.com/dsx42/UnattendTool <====="
+    Write-Host -Object ''
     Write-Host -Object '================================================'
     Write-Host -Object '选择要安装系统的分区编号，类型必须为基本数据分区'
     Write-Host -Object '================================================'
@@ -522,6 +550,11 @@ function ShowIsBoot {
 }
 
 function ShowCreatePartition {
+
+    Clear-Host
+    Write-Host -Object ''
+    Write-Host -Object "=====> UnattendTool v$VersionInfo https://github.com/dsx42/UnattendTool <====="
+    Write-Host -Object ''
 
     if (1 -eq $script:WipeDisk) {
         $CreatePartitionInfo = [ordered]@{
@@ -635,6 +668,11 @@ function ShowPartitionIdSelect {
     $CurrentDisks = GetCurrentDisk
     $SelectDisk = $CurrentDisks[$DiskId]
 
+    Clear-Host
+    Write-Host -Object ''
+    Write-Host -Object "=====> UnattendTool v$VersionInfo https://github.com/dsx42/UnattendTool <====="
+    Write-Host -Object ''
+
     if ($SelectDisk) {
         Write-Host -Object '================================================'
         Write-Host -Object "选择要安装系统的分区编号，推荐当前系统所在分区 $DefalultSelect"
@@ -696,6 +734,10 @@ function ShowPartitionIdSelect {
 
 function ShowFomatSelect {
 
+    Clear-Host
+    Write-Host -Object ''
+    Write-Host -Object "=====> UnattendTool v$VersionInfo https://github.com/dsx42/UnattendTool <====="
+    Write-Host -Object ''
     Write-Host -Object '================================'
     Write-Host -Object '选择是否对所选分区格式化，推荐 1'
     Write-Host -Object '================================'
@@ -734,6 +776,10 @@ function ShowPartitionStyleSelect {
         $DefaultPartitionStyle = 'MBR'
     }
 
+    Clear-Host
+    Write-Host -Object ''
+    Write-Host -Object "=====> UnattendTool v$VersionInfo https://github.com/dsx42/UnattendTool <====="
+    Write-Host -Object ''
     Write-Host -Object '===================================='
     Write-Host -Object "请确认所选硬盘分区的分区类型，推荐 $DefalultSelect"
     Write-Host -Object '===================================='
@@ -766,6 +812,10 @@ function ShowPartitionStyleSelect {
 
 function ShowNameInput {
 
+    Clear-Host
+    Write-Host -Object ''
+    Write-Host -Object "=====> UnattendTool v$VersionInfo https://github.com/dsx42/UnattendTool <====="
+    Write-Host -Object ''
     Write-Host -Object '=================================================='
     Write-Host -Object '输入系统安装后的登录账号名，账号名建议符合如下要求'
     Write-Host -Object '=================================================='
@@ -788,6 +838,10 @@ function ShowNameInput {
 
 function ShowPasswordInput {
 
+    Clear-Host
+    Write-Host -Object ''
+    Write-Host -Object "=====> UnattendTool v$VersionInfo https://github.com/dsx42/UnattendTool <====="
+    Write-Host -Object ''
     Write-Host -Object '======================================================================'
     Write-Host -Object '输入系统安装后的登录账号密码，推荐不设置密码，系统安装后再自行设置密码'
     Write-Host -Object '======================================================================'
@@ -808,6 +862,10 @@ function ShowDriverLetterSelect {
 
     $CurrentDisks = GetCurrentDisk
 
+    Clear-Host
+    Write-Host -Object ''
+    Write-Host -Object "=====> UnattendTool v$VersionInfo https://github.com/dsx42/UnattendTool <====="
+    Write-Host -Object ''
     Write-Host -Object '======================================='
     Write-Host -Object '输入 U 盘启动盘盘符或者镜像文件所在目录'
     Write-Host -Object '======================================='
@@ -863,6 +921,10 @@ function ShowDriverLetterSelect {
 function ShowGetISOPath {
     param($Path)
 
+    Clear-Host
+    Write-Host -Object ''
+    Write-Host -Object "=====> UnattendTool v$VersionInfo https://github.com/dsx42/UnattendTool <====="
+    Write-Host -Object ''
     Write-Host -Object '==============================='
     Write-Host -Object '选择使用应答文件的 ISO 镜像文件'
     Write-Host -Object '==============================='
@@ -1071,6 +1133,7 @@ if ($Version) {
 
 Clear-Host
 $PSDefaultParameterValues['*:Encoding'] = 'utf8'
+$ProgressPreference = 'SilentlyContinue'
 $Host.UI.RawUI.WindowTitle = "UnattendTool v$VersionInfo"
 Set-Location -Path $PSScriptRoot
 Write-Host -Object ''
@@ -1244,7 +1307,7 @@ if (!(Test-Path -Path "$ParentPath\setup.exe" -PathType Leaf)) {
     elseif (!$NotFormat) {
         $DiskTypeStr = "_Format$PartitionStyle"
     }
-    
+
     if ('' -ieq $WindowsProductName) {
         $UnattendName = 'Unattend_Windows_' + $OsVersion + '_' + $Architecture + '_' `
             + $Language + $DiskTypeStr + '_' + $FullName
@@ -1260,14 +1323,31 @@ if (!(Test-Path -Path "$ParentPath\setup.exe" -PathType Leaf)) {
     $GB2312Encoding = [System.Text.Encoding]::GetEncoding('gb2312')
     $CmdContents = @(
         '@echo off',
+        '',
+        'if "%1" == "RunAs" (',
+        '    goto RunAs',
+        ')',
+        '',
+        'set file_folder=%~dp0',
+        '',
+        ("mshta `"javascript:new ActiveXObject('Shell.Application').ShellExecute('%~nx0', 'RunAs', " `
+            + "'%file_folder:\=\\%', 'runas', 1); window.close()`" && exit /b 0"),
+        '',
+        ':RunAs',
+        'echo.',
+        '',
         ':GetSetupPath',
         'set /P setupPath=请输入镜像挂载或解压后的目录:',
+        '',
         'if not exist %setupPath%\setup.exe (',
-        '    echo.',
-        '    echo 目录 %setupPath% 下不存在 setup.exe，并非镜像挂载或解压后的目录，请重新确认输入',
-        '    echo.',
-        '    goto GetSetupPath',
-        ')'
+        '    if not exist %setupPath%:\setup.exe (',
+        '        echo.',
+        '        echo 目录 %setupPath% 下不存在 setup.exe，并非镜像挂载或解压后的目录，请重新确认输入',
+        '        echo.',
+        '        goto GetSetupPath',
+        '    )',
+        ')',
+        ''
     )
     if (11 -eq $OsVersion) {
         $CmdContents += 'reg add "HKLM\System\Setup\LabConfig" /v "BypassTPMCheck" /t REG_DWORD /d "1" /f'
@@ -1276,6 +1356,7 @@ if (!(Test-Path -Path "$ParentPath\setup.exe" -PathType Leaf)) {
         $CmdContents += 'reg add "HKLM\System\Setup\LabConfig" /v "BypassStorageCheck" /t REG_DWORD /d "1" /f'
         $CmdContents += 'reg add "HKLM\System\Setup\LabConfig" /v "BypassCPUCheck" /t REG_DWORD /d "1" /f'
     }
+    $CmdContents += ''
     $CmdContents += "%setupPath%\setup.exe /unattend:%~dp0$UnattendName.xml"
     [System.IO.File]::WriteAllLines("$VentoyConfigScriptPath\Install_$UnattendName.cmd", $CmdContents, $GB2312Encoding)
 }
@@ -1284,7 +1365,19 @@ else {
     Remove-Item -Path "$ParentPath\Install_Autounattend.cmd" -Force -ErrorAction SilentlyContinue
     $GB2312Encoding = [System.Text.Encoding]::GetEncoding('gb2312')
     $CmdContents = @(
-        '@echo off'
+        '@echo off',
+        '',
+        'if "%1" == "RunAs" (',
+        '    goto RunAs',
+        ')',
+        '',
+        'set file_folder=%~dp0',
+        '',
+        ("mshta `"javascript:new ActiveXObject('Shell.Application').ShellExecute('%~nx0', 'RunAs', " `
+            + "'%file_folder:\=\\%', 'runas', 1); window.close()`" && exit /b 0"),
+        '',
+        ':RunAs',
+        ''
     )
     if (11 -eq $OsVersion) {
         $CmdContents += 'reg add "HKLM\System\Setup\LabConfig" /v "BypassTPMCheck" /t REG_DWORD /d "1" /f'
@@ -1293,6 +1386,7 @@ else {
         $CmdContents += 'reg add "HKLM\System\Setup\LabConfig" /v "BypassStorageCheck" /t REG_DWORD /d "1" /f'
         $CmdContents += 'reg add "HKLM\System\Setup\LabConfig" /v "BypassCPUCheck" /t REG_DWORD /d "1" /f'
     }
+    $CmdContents += ''
     $CmdContents += '%~dp0setup.exe /unattend:%~dp0Autounattend.xml'
     [System.IO.File]::WriteAllLines("$ParentPath\Install_Autounattend.cmd", $CmdContents, $GB2312Encoding)
 }
@@ -1443,7 +1537,7 @@ elseif (!$NotFormat) {
 Add-Content -Path $UnattendPath -Value '            <ImageInstall>'
 Add-Content -Path $UnattendPath -Value '                <OSImage>'
 if ($WindowsProductName) {
-    $ImageName = 'Windows ' + $OsVersion + ' ' + $ProductInfo['US']
+    $ImageName = 'Windows 10 ' + $ProductInfo['US']
     Add-Content -Path $UnattendPath -Value '                    <InstallFrom>'
     Add-Content -Path $UnattendPath -Value '                        <MetaData wcm:action="add">'
     Add-Content -Path $UnattendPath -Value '                            <Key>/IMAGE/NAME</Key>'
