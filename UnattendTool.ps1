@@ -1345,7 +1345,11 @@ if (!(Test-Path -Path "$ParentPath\setup.exe" -PathType Leaf)) {
         '        echo 目录 %setupPath% 下不存在 setup.exe，并非镜像挂载或解压后的目录，请重新确认输入',
         '        echo.',
         '        goto GetSetupPath',
+        '    ) else (',
+        '        set finalPath=%setupPath%:',
         '    )',
+        ') else (',
+        '    set finalPath=%setupPath%',
         ')',
         ''
     )
@@ -1357,7 +1361,7 @@ if (!(Test-Path -Path "$ParentPath\setup.exe" -PathType Leaf)) {
         $CmdContents += 'reg add "HKLM\System\Setup\LabConfig" /v "BypassCPUCheck" /t REG_DWORD /d "1" /f'
     }
     $CmdContents += ''
-    $CmdContents += "%setupPath%\setup.exe /unattend:%~dp0$UnattendName.xml"
+    $CmdContents += "%finalPath%\setup.exe /unattend:%~dp0$UnattendName.xml"
     [System.IO.File]::WriteAllLines("$VentoyConfigScriptPath\Install_$UnattendName.cmd", $CmdContents, $GB2312Encoding)
 }
 else {
