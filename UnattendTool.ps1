@@ -10,6 +10,7 @@
     $Password = '',
     $DriverLetter = '',
     $ISOPath = '',
+    [switch]$ByPassCheck,
     [switch]$Interactive,
     [switch]$NotFormat,
     [switch]$Version
@@ -193,10 +194,10 @@ function ShowLanguageSelect {
     Write-Host -Object "=====> UnattendTool v$VersionInfo https://github.com/dsx42/UnattendTool <====="
     Write-Host -Object ''
     Write-Host -Object '============================'
-    Write-Host -Object '选择要安装系统的语言，推荐 1'
+    Write-Host -Object '选择要安装系统的语言，推荐 1' -ForegroundColor Green
     Write-Host -Object '============================'
     Write-Host -Object ''
-    Write-Host -Object '1: 简体中文 zh-CN'
+    Write-Host -Object '1: 简体中文 zh-CN' -ForegroundColor Green
     Write-Host -Object ''
     Write-Host -Object '2: 英文 en-US'
 
@@ -225,10 +226,10 @@ function ShowOsVersionSelect {
     Write-Host -Object "=====> UnattendTool v$VersionInfo https://github.com/dsx42/UnattendTool <====="
     Write-Host -Object ''
     Write-Host -Object '============================'
-    Write-Host -Object '选择要安装系统的版本，推荐 1'
+    Write-Host -Object '选择要安装系统的版本，推荐 1' -ForegroundColor Green
     Write-Host -Object '============================'
     Write-Host -Object ''
-    Write-Host -Object '1: Windows 11'
+    Write-Host -Object '1: Windows 11' -ForegroundColor Green
     Write-Host -Object ''
     Write-Host -Object '2: Windows 10'
 
@@ -257,10 +258,10 @@ function ShowWindowsProductNameSelect {
     Write-Host -Object "=====> UnattendTool v$VersionInfo https://github.com/dsx42/UnattendTool <====="
     Write-Host -Object ''
     Write-Host -Object '============================'
-    Write-Host -Object '选择要安装系统的产品，推荐 1'
+    Write-Host -Object '选择要安装系统的产品，推荐 1' -ForegroundColor Green
     Write-Host -Object '============================'
     Write-Host -Object ''
-    Write-Host -Object '1: 企业版 Enterprise'
+    Write-Host -Object '1: 企业版 Enterprise' -ForegroundColor Green
     Write-Host -Object ''
     Write-Host -Object '2: 教育版 Education'
     Write-Host -Object ''
@@ -306,6 +307,43 @@ function ShowWindowsProductNameSelect {
     }
 }
 
+function ShowByPassSelect {
+    param($OsVersion)
+
+    if ($OsVersion -eq 10) {
+        return $false
+    }
+
+    Clear-Host
+    Write-Host -Object ''
+    Write-Host -Object "=====> UnattendTool v$VersionInfo https://github.com/dsx42/UnattendTool <====="
+    Write-Host -Object ''
+    Write-Host -Object '======================================'
+    Write-Host -Object '选择系统安装时是否跳过硬件检测，推荐 0' -ForegroundColor Green
+    Write-Host -Object '======================================'
+    Write-Host -Object ''
+    Write-Host -Object '0: 否' -ForegroundColor Green
+    Write-Host -Object ''
+    Write-Host -Object '1: 是'
+
+    while ($true) {
+        Write-Host -Object ''
+        $InputOption = Read-Host -Prompt '请输入选择的序号(默认为 0)，按回车键确认'
+        if ($InputOption -ieq '' -or $InputOption -ieq '0') {
+            Write-Host -Object ''
+            return $false
+        }
+        elseif ($InputOption -ieq '1') {
+            Write-Host -Object ''
+            return $true
+        }
+        else {
+            Write-Host -Object ''
+            Write-Warning -Message '选择无效，请重新输入'
+        }
+    }
+}
+
 function ShowArchitectureSelect {
     param($OsVersion)
 
@@ -318,10 +356,10 @@ function ShowArchitectureSelect {
     Write-Host -Object "=====> UnattendTool v$VersionInfo https://github.com/dsx42/UnattendTool <====="
     Write-Host -Object ''
     Write-Host -Object '============================'
-    Write-Host -Object '选择要安装系统的架构，推荐 1'
+    Write-Host -Object '选择要安装系统的架构，推荐 1' -ForegroundColor Green
     Write-Host -Object '============================'
     Write-Host -Object ''
-    Write-Host -Object '1: 64 位系统 x64'
+    Write-Host -Object '1: 64 位系统 x64' -ForegroundColor Green
     Write-Host -Object ''
     Write-Host -Object '2: 32 位系统 x86'
 
@@ -353,10 +391,10 @@ function ShowDiskIdSelect {
     Write-Host -Object "=====> UnattendTool v$VersionInfo https://github.com/dsx42/UnattendTool <====="
     Write-Host -Object ''
     Write-Host -Object '================================================'
-    Write-Host -Object "选择要安装系统的硬盘编号，推荐当前系统所在硬盘 $SystemDiskId"
+    Write-Host -Object "选择要安装系统的硬盘编号，推荐当前系统所在硬盘 $SystemDiskId" -ForegroundColor Green
     Write-Host -Object '================================================'
     Write-Host -Object ''
-    Write-Host -Object '当前系统识别到的硬盘如下：红色字体的硬盘为当前系统所在硬盘，红色字体的分区为当前系统所在分区'
+    Write-Host -Object '当前系统识别到的硬盘如下：绿色字体的硬盘为当前系统所在硬盘，绿色字体的分区为当前系统所在分区'
 
     $CurrentDisks.GetEnumerator() | ForEach-Object {
 
@@ -366,7 +404,7 @@ function ShowDiskIdSelect {
 
         Write-Host -Object ''
         if ($_.Value['IsBoot']) {
-            Write-Host -Object $msg -ForegroundColor Red
+            Write-Host -Object $msg -ForegroundColor Green
         }
         else {
             Write-Host -Object $msg
@@ -381,7 +419,7 @@ function ShowDiskIdSelect {
 
             Write-Host -Object '  |'
             if ($_.Value['IsBoot']) {
-                Write-Host -Object $msg -ForegroundColor Red
+                Write-Host -Object $msg -ForegroundColor Green
             }
             else {
                 Write-Host -Object $msg
@@ -423,19 +461,19 @@ function ShowWipeDiskSelect {
     Write-Host -Object ''
     if ($SelectDisk -and $SelectDisk['PartitionStyle'] -ine 'GPT') {
         Write-Host -Object '=================================='
-        Write-Host -Object '选择是否对所选硬盘进行分区，推荐 1'
+        Write-Host -Object '选择是否对所选硬盘进行分区，推荐 1' -ForegroundColor Green
         Write-Host -Object '=================================='
         $DefalultSelect = 1
     }
     else {
         Write-Host -Object '=================================='
-        Write-Host -Object '选择是否对所选硬盘进行分区，推荐 0'
+        Write-Host -Object '选择是否对所选硬盘进行分区，推荐 0' -ForegroundColor Green
         Write-Host -Object '=================================='
         $DefalultSelect = 0
     }
 
     Write-Host -Object ''
-    Write-Host -Object '0: 否'
+    Write-Host -Object '0: 否' -ForegroundColor Green
     Write-Host -Object ''
     Write-Host -Object '1: GPT 分区，注意：安装系统时会清除所选硬盘的数据，请及时备份所选硬盘的数据' -ForegroundColor Red
     Write-Host -Object ''
@@ -470,7 +508,7 @@ function ShowWipeDiskSelect {
 function ShowNewPartition {
     param($CreatePartitionInfo)
 
-    Write-Host -Object '所选硬盘重新分区如下：红色字体的分区为系统安装分区'
+    Write-Host -Object '所选硬盘重新分区如下：绿色字体的分区为系统安装分区'
     Write-Host -Object ''
 
     $CreatePartitionInfo.GetEnumerator() | ForEach-Object {
@@ -484,7 +522,7 @@ function ShowNewPartition {
             + $_.Value['FileSystem'] + ', 类型: ' + $_.Value['TypeName'] + ', 容量: ' + $VolumeSize
 
         if ($_.Value['IsBoot']) {
-            Write-Host -Object $msg -ForegroundColor Red
+            Write-Host -Object $msg -ForegroundColor Green
         }
         else {
             Write-Host -Object $msg
@@ -519,7 +557,7 @@ function ShowIsBoot {
     Write-Host -Object "=====> UnattendTool v$VersionInfo https://github.com/dsx42/UnattendTool <====="
     Write-Host -Object ''
     Write-Host -Object '================================================'
-    Write-Host -Object '选择要安装系统的分区编号，类型必须为基本数据分区'
+    Write-Host -Object '选择要安装系统的分区编号，类型必须为基本数据分区' -ForegroundColor Green
     Write-Host -Object '================================================'
     Write-Host -Object ''
 
@@ -581,7 +619,7 @@ function ShowCreatePartition {
         }
         $PartitionNumber = 1
         Write-Host -Object '==============='
-        Write-Host -Object '创建新 GPT 分区'
+        Write-Host -Object '创建新 GPT 分区' -ForegroundColor Green
         Write-Host -Object '==============='
         Write-Host -Object ''
     }
@@ -589,7 +627,7 @@ function ShowCreatePartition {
         $CreatePartitionInfo = [ordered]@{}
         $PartitionNumber = 0
         Write-Host -Object '======================================'
-        Write-Host -Object '创建新 MBR 分区，最多支持创建 4 个分区'
+        Write-Host -Object '创建新 MBR 分区，最多支持创建 4 个分区' -ForegroundColor Green
         Write-Host -Object '======================================'
         Write-Host -Object ''
     }
@@ -675,10 +713,10 @@ function ShowPartitionIdSelect {
 
     if ($SelectDisk) {
         Write-Host -Object '================================================'
-        Write-Host -Object "选择要安装系统的分区编号，推荐当前系统所在分区 $DefalultSelect"
+        Write-Host -Object "选择要安装系统的分区编号，推荐当前系统所在分区 $DefalultSelect" -ForegroundColor Green
         Write-Host -Object '================================================'
         Write-Host -Object ''
-        Write-Host -Object '所选硬盘的分区如下：红色字体的分区为当前系统所在分区'
+        Write-Host -Object '所选硬盘的分区如下：绿色字体的分区为当前系统所在分区'
 
         $SelectDisk['Partitions'].GetEnumerator() | ForEach-Object {
 
@@ -689,7 +727,7 @@ function ShowPartitionIdSelect {
 
             Write-Host -Object ''
             if ($_.Value['IsBoot']) {
-                Write-Host -Object $msg -ForegroundColor Red
+                Write-Host -Object $msg -ForegroundColor Green
             }
             else {
                 Write-Host -Object $msg
@@ -698,7 +736,7 @@ function ShowPartitionIdSelect {
     }
     else {
         Write-Host -Object '================================'
-        Write-Host -Object "选择要安装系统的分区编号，推荐 $DefalultSelect"
+        Write-Host -Object "选择要安装系统的分区编号，推荐 $DefalultSelect" -ForegroundColor Green
         Write-Host -Object '================================'
     }
 
@@ -739,7 +777,7 @@ function ShowFomatSelect {
     Write-Host -Object "=====> UnattendTool v$VersionInfo https://github.com/dsx42/UnattendTool <====="
     Write-Host -Object ''
     Write-Host -Object '================================'
-    Write-Host -Object '选择是否对所选分区格式化，推荐 1'
+    Write-Host -Object '选择是否对所选分区格式化，推荐 1' -ForegroundColor Green
     Write-Host -Object '================================'
     Write-Host -Object ''
     Write-Host -Object '0: 否'
@@ -781,7 +819,7 @@ function ShowPartitionStyleSelect {
     Write-Host -Object "=====> UnattendTool v$VersionInfo https://github.com/dsx42/UnattendTool <====="
     Write-Host -Object ''
     Write-Host -Object '===================================='
-    Write-Host -Object "请确认所选硬盘分区的分区类型，推荐 $DefalultSelect"
+    Write-Host -Object "请确认所选硬盘分区的分区类型，推荐 $DefalultSelect" -ForegroundColor Green
     Write-Host -Object '===================================='
     Write-Host -Object ''
     Write-Host -Object '1: GPT 分区'
@@ -817,12 +855,12 @@ function ShowNameInput {
     Write-Host -Object "=====> UnattendTool v$VersionInfo https://github.com/dsx42/UnattendTool <====="
     Write-Host -Object ''
     Write-Host -Object '=================================================='
-    Write-Host -Object '输入系统安装后的登录账号名，账号名建议符合如下要求'
+    Write-Host -Object '输入系统安装后的登录账号名，账号名建议符合如下要求' -ForegroundColor Green
     Write-Host -Object '=================================================='
     Write-Host -Object ''
-    Write-Host -Object '1: 推荐英文字母或数字的组合，尽量不使用特殊字符'
+    Write-Host -Object '1: 推荐英文字母或数字的组合，尽量不使用空格或其他特殊字符' -ForegroundColor Yellow
     Write-Host -Object ''
-    Write-Host -Object '2: 尽量不使用中文，防止某些应用软件不支持中文而无法使用'
+    Write-Host -Object '2: 尽量不使用中文，防止某些应用软件不支持中文而无法使用' -ForegroundColor Yellow
     Write-Host -Object ''
 
     $InputOption = Read-Host -Prompt '请输入登录账号名(默认为 MyPC)，按回车键确认'
@@ -843,7 +881,7 @@ function ShowPasswordInput {
     Write-Host -Object "=====> UnattendTool v$VersionInfo https://github.com/dsx42/UnattendTool <====="
     Write-Host -Object ''
     Write-Host -Object '======================================================================'
-    Write-Host -Object '输入系统安装后的登录账号密码，推荐不设置密码，系统安装后再自行设置密码'
+    Write-Host -Object '输入系统安装后的登录账号密码，推荐不设置密码，系统安装后再自行设置密码' -ForegroundColor Green
     Write-Host -Object '======================================================================'
     Write-Host -Object ''
 
@@ -866,9 +904,9 @@ function ShowDriverLetterSelect {
     Write-Host -Object ''
     Write-Host -Object "=====> UnattendTool v$VersionInfo https://github.com/dsx42/UnattendTool <====="
     Write-Host -Object ''
-    Write-Host -Object '======================================='
-    Write-Host -Object '输入 U 盘启动盘盘符或者镜像文件所在目录'
-    Write-Host -Object '======================================='
+    Write-Host -Object '=================================='
+    Write-Host -Object '输入启动盘盘符或者镜像文件所在目录' -ForegroundColor Green
+    Write-Host -Object '=================================='
     Write-Host -Object ''
     Write-Host -Object '当前系统识别到的驱动器如下：'
 
@@ -894,7 +932,7 @@ function ShowDriverLetterSelect {
     while ($true) {
         Write-Host -Object ''
         $InputOption = Read-Host `
-            -Prompt '请输入 U 盘启动盘盘符或者镜像文件所在目录(0 表示将应答文件保存到当前用户的桌面上)，按回车键确认'
+            -Prompt '请输入启动盘盘符或者镜像文件所在目录(0 表示将应答文件保存到当前用户的桌面上)，按回车键确认'
         if ($InputOption -ieq '') {
             Write-Host -Object ''
             Write-Warning -Message '选择无效，请重新输入'
@@ -903,7 +941,7 @@ function ShowDriverLetterSelect {
             Write-Host -Object ''
             return ''
         }
-        elseif (Test-Path -Path $InputOption -PathType Container) {
+        elseif (Test-Path -Path "$InputOption" -PathType Container) {
             Write-Host -Object ''
             return $InputOption
         }
@@ -926,7 +964,7 @@ function ShowGetISOPath {
     Write-Host -Object "=====> UnattendTool v$VersionInfo https://github.com/dsx42/UnattendTool <====="
     Write-Host -Object ''
     Write-Host -Object '==============================='
-    Write-Host -Object '选择使用应答文件的 ISO 镜像文件'
+    Write-Host -Object '选择使用应答文件的 ISO 镜像文件' -ForegroundColor Green
     Write-Host -Object '==============================='
     Write-Host -Object ''
     Write-Host -Object '搜索 ISO 镜像文件中......'
@@ -934,7 +972,7 @@ function ShowGetISOPath {
     $ISOFiles = [ordered]@{}
     $Index = 0;
     try {
-        Get-ChildItem -Path $Path -Filter '*.iso' -Recurse -Depth 1 -File -ErrorAction SilentlyContinue | `
+        Get-ChildItem -Path "$Path" -Filter '*.iso' -Recurse -Depth 1 -File -ErrorAction SilentlyContinue | `
             ForEach-Object {
             $Index = $Index + 1
             $ISOFiles.Add([System.String]$Index, $_.FullName)
@@ -942,6 +980,7 @@ function ShowGetISOPath {
     }
     catch {
         $msg = $Path + ' 无权限'
+        Write-Host -Object ''
         Write-Warning -Message $msg
     }
 
@@ -951,7 +990,7 @@ function ShowGetISOPath {
         $ISOFiles.GetEnumerator() | ForEach-Object {
             Write-Host -Object ''
             $msg = '镜像文件序号: ' + $_.Key + ', 镜像文件路径: ' + $_.Value
-            Write-Host -Object $msg
+            Write-Host -Object $msg -ForegroundColor Green
         }
         while ($true) {
             Write-Host -Object ''
@@ -979,7 +1018,8 @@ function UpdateVentoyConfig {
     param(
         $ISOPath,
         $UnattendPath,
-        $VentoyConfigParentPath
+        $VentoyConfigParentPath,
+        $ByPassCheck
     )
 
     if (!$ISOPath) {
@@ -992,18 +1032,23 @@ function UpdateVentoyConfig {
         return
     }
 
-    $ISOPath = Split-Path -Path $ISOPath -NoQualifier
+    $ByPassCheckStr = '0'
+    if ($ByPassCheck) {
+        $ByPassCheckStr = '1'
+    }
+
+    $ISOPath = Split-Path -Path "$ISOPath" -NoQualifier
     $ISOPath = $ISOPath.Replace('\', '/')
 
-    $UnattendPath = Split-Path -Path $UnattendPath -NoQualifier
+    $UnattendPath = Split-Path -Path "$UnattendPath" -NoQualifier
     $UnattendPath = $UnattendPath.Replace('\', '/')
 
-    $VentoyConfigJsonPath = Join-Path -Path $VentoyConfigParentPath -ChildPath 'ventoy.json'
+    $VentoyConfigJsonPath = Join-Path -Path "$VentoyConfigParentPath" -ChildPath 'ventoy.json'
 
     $JSONContent = $null
-    if (Test-Path -Path $VentoyConfigJsonPath -PathType Leaf) {
+    if (Test-Path -Path "$VentoyConfigJsonPath" -PathType Leaf) {
         try {
-            $JSONContent = Get-Content -Path $VentoyConfigJsonPath | ConvertFrom-Json
+            $JSONContent = Get-Content -Path "$VentoyConfigJsonPath" | ConvertFrom-Json
         }
         catch {
             $msg = $VentoyConfigJsonPath + ' 解析失败'
@@ -1014,7 +1059,7 @@ function UpdateVentoyConfig {
     if (!$JSONContent -or !($JSONContent -is [PSCustomObject])) {
         $JSONContent = [PSCustomObject]@{
             'control'      = @(@{
-                    'VTOY_WIN11_BYPASS_CHECK' = '1'
+                    'VTOY_WIN11_BYPASS_CHECK' = "$ByPassCheckStr"
                 });
             'auto_install' = @(@{
                     'image'    = $ISOPath;
@@ -1031,14 +1076,16 @@ function UpdateVentoyConfig {
     $Controls = $JSONContent.'control'
     if ($null -eq $Controls -or !($Controls -is [System.Array])) {
         Add-Member -InputObject $JSONContent -Force `
-            -NotePropertyMembers @{ 'control' = @(@{ 'VTOY_WIN11_BYPASS_CHECK' = '1' }) }
+            -NotePropertyMembers @{ 'control' = @(@{ 'VTOY_WIN11_BYPASS_CHECK' = "$ByPassCheckStr" }) }
     }
     else {
         $AddFlag = $false
         foreach ($Control in $Controls) {
             if ($null -eq $Control) {
                 $AddFlag = $true
-                Add-Member -InputObject $Control -Force -NotePropertyMembers @{ 'VTOY_WIN11_BYPASS_CHECK' = '1' }
+                Add-Member -InputObject $Control -Force -NotePropertyMembers @{ 
+                    'VTOY_WIN11_BYPASS_CHECK' = "$ByPassCheckStr"
+                }
                 break
             }
             $Check = $Control.'VTOY_WIN11_BYPASS_CHECK'
@@ -1046,11 +1093,13 @@ function UpdateVentoyConfig {
                 continue
             }
             $AddFlag = $true
-            Add-Member -InputObject $Control -Force -NotePropertyMembers @{ 'VTOY_WIN11_BYPASS_CHECK' = '1' }
+            Add-Member -InputObject $Control -Force -NotePropertyMembers @{ 
+                'VTOY_WIN11_BYPASS_CHECK' = "$ByPassCheckStr"
+            }
             break
         }
         if (!$AddFlag) {
-            $Controls += [PSCustomObject]@{ 'VTOY_WIN11_BYPASS_CHECK' = '1' }
+            $Controls += [PSCustomObject]@{ 'VTOY_WIN11_BYPASS_CHECK' = "$ByPassCheckStr" }
             $JSONContent.'control' = $Controls
         }
     }
@@ -1098,14 +1147,14 @@ function UpdateVentoyConfig {
 function GetVertion {
     $ProductJsonPath = "$PSScriptRoot\product.json"
 
-    if (!(Test-Path -Path $ProductJsonPath -PathType Leaf)) {
+    if (!(Test-Path -Path "$ProductJsonPath" -PathType Leaf)) {
         Write-Warning -Message ("$ProductJsonPath 不存在")
         [System.Environment]::Exit(0)
     }
 
     $ProductInfo = $null
     try {
-        $ProductInfo = Get-Content -Path $ProductJsonPath | ConvertFrom-Json
+        $ProductInfo = Get-Content -Path "$ProductJsonPath" | ConvertFrom-Json
     }
     catch {
         Write-Warning -Message ("$ProductJsonPath 解析失败")
@@ -1135,7 +1184,7 @@ Clear-Host
 $PSDefaultParameterValues['*:Encoding'] = 'utf8'
 $ProgressPreference = 'SilentlyContinue'
 $Host.UI.RawUI.WindowTitle = "UnattendTool v$VersionInfo"
-Set-Location -Path $PSScriptRoot
+Set-Location -Path "$PSScriptRoot"
 Write-Host -Object ''
 Write-Host -Object "=====> UnattendTool v$VersionInfo https://github.com/dsx42/UnattendTool <====="
 Write-Host -Object ''
@@ -1182,6 +1231,7 @@ if ($Interactive) {
     $OsVersion = ShowOsVersionSelect
     $WindowsProductName = ShowWindowsProductNameSelect
     $Architecture = ShowArchitectureSelect -OsVersion $OsVersion
+    $ByPassCheck = ShowByPassSelect -OsVersion $OsVersion
     $DiskId = ShowDiskIdSelect
     $WipeDisk = ShowWipeDiskSelect -DiskId $DiskId
     if (1 -eq $WipeDisk -or 2 -eq $WipeDisk) {
@@ -1198,7 +1248,7 @@ if ($Interactive) {
     $Password = ShowPasswordInput
     $DriverLetter = ShowDriverLetterSelect
     if ($DriverLetter) {
-        $ISOPath = ShowGetISOPath -Path $DriverLetter
+        $ISOPath = ShowGetISOPath -Path "$DriverLetter"
     }
 }
 
@@ -1270,8 +1320,8 @@ if ('' -ieq $DriverLetter) {
 else {
     $ParentPath = $DriverLetter
     if ($ISOPath) {
-        $Letter1 = Split-Path -Path $ISOPath -Qualifier
-        $Letter2 = Split-Path -Path $ISOPath -Qualifier
+        $Letter1 = Split-Path -Path "$ISOPath" -Qualifier
+        $Letter2 = Split-Path -Path "$ISOPath" -Qualifier
         if ($Letter1 -ine $Letter2) {
             Write-Warning -Message '参数 ISOPath 指定的路径必须和参数 DriverLetter 指定的驱动器属于同一个驱动器'
             [System.Environment]::Exit(0)
@@ -1286,15 +1336,15 @@ if ($WindowsProductName) {
 
 $UnattendName = 'Autounattend'
 if ($ISOPath) {
-    $VentoyConfigParentPath = Join-Path -Path $ParentPath -ChildPath 'ventoy'
-    if (!$(Test-Path -Path $VentoyConfigParentPath -PathType Container)) {
-        New-Item -Path $VentoyConfigParentPath -ItemType Directory -Force | Out-Null
+    $VentoyConfigParentPath = Join-Path -Path "$ParentPath" -ChildPath 'ventoy'
+    if (!$(Test-Path -Path "$VentoyConfigParentPath" -PathType Container)) {
+        New-Item -Path "$VentoyConfigParentPath" -ItemType Directory -Force | Out-Null
     }
 }
 if (!(Test-Path -Path "$ParentPath\setup.exe" -PathType Leaf)) {
-    $VentoyConfigScriptPath = Join-Path -Path $ParentPath -ChildPath 'script'
-    if (!$(Test-Path -Path $VentoyConfigScriptPath -PathType Container)) {
-        New-Item -Path $VentoyConfigScriptPath -ItemType Directory -Force | Out-Null
+    $VentoyConfigScriptPath = Join-Path -Path "$ParentPath" -ChildPath 'script'
+    if (!$(Test-Path -Path "$VentoyConfigScriptPath" -PathType Container)) {
+        New-Item -Path "$VentoyConfigScriptPath" -ItemType Directory -Force | Out-Null
     }
 
     $DiskTypeStr = ''
@@ -1353,7 +1403,7 @@ if (!(Test-Path -Path "$ParentPath\setup.exe" -PathType Leaf)) {
         ')',
         ''
     )
-    if (11 -eq $OsVersion) {
+    if (11 -eq $OsVersion -and $ByPassCheck) {
         $CmdContents += 'reg add "HKLM\System\Setup\LabConfig" /v "BypassTPMCheck" /t REG_DWORD /d "1" /f'
         $CmdContents += 'reg add "HKLM\System\Setup\LabConfig" /v "BypassSecureBootCheck" /t REG_DWORD /d "1" /f'
         $CmdContents += 'reg add "HKLM\System\Setup\LabConfig" /v "BypassRAMCheck" /t REG_DWORD /d "1" /f'
@@ -1383,7 +1433,7 @@ else {
         ':RunAs',
         ''
     )
-    if (11 -eq $OsVersion) {
+    if (11 -eq $OsVersion -and $ByPassCheck) {
         $CmdContents += 'reg add "HKLM\System\Setup\LabConfig" /v "BypassTPMCheck" /t REG_DWORD /d "1" /f'
         $CmdContents += 'reg add "HKLM\System\Setup\LabConfig" /v "BypassSecureBootCheck" /t REG_DWORD /d "1" /f'
         $CmdContents += 'reg add "HKLM\System\Setup\LabConfig" /v "BypassRAMCheck" /t REG_DWORD /d "1" /f'
@@ -1395,278 +1445,279 @@ else {
     [System.IO.File]::WriteAllLines("$ParentPath\Install_Autounattend.cmd", $CmdContents, $GB2312Encoding)
 }
 
-UpdateVentoyConfig -ISOPath $ISOPath -UnattendPath $UnattendPath -VentoyConfigParentPath $VentoyConfigParentPath
+UpdateVentoyConfig -ISOPath $ISOPath -UnattendPath $UnattendPath -VentoyConfigParentPath $VentoyConfigParentPath `
+    -ByPassCheck $ByPassCheck
 
-if (Test-Path -Path $UnattendPath -PathType Leaf) {
-    Remove-Item -Path $UnattendPath -Force
+if (Test-Path -Path "$UnattendPath" -PathType Leaf) {
+    Remove-Item -Path "$UnattendPath" -Force
 }
-Add-Content -Path $UnattendPath -Value '<?xml version="1.0" encoding="utf-8"?>'
-Add-Content -Path $UnattendPath -Value ''
-Add-Content -Path $UnattendPath -Value "<!-- UnattendTool v$VersionInfo -->"
-Add-Content -Path $UnattendPath -Value '<!-- 开源协议: GPL-3.0 -->'
-Add-Content -Path $UnattendPath -Value '<!-- 官网: https://github.com/dsx42/UnattendTool -->'
-Add-Content -Path $UnattendPath -Value ''
-Add-Content -Path $UnattendPath -Value '<unattend xmlns="urn:schemas-microsoft-com:unattend">'
-Add-Content -Path $UnattendPath -Value '    <settings pass="windowsPE">'
-Add-Content -Path $UnattendPath -Value ("        <component name=`"Microsoft-Windows-International-Core-WinPE`"" `
+Add-Content -Path "$UnattendPath" -Value '<?xml version="1.0" encoding="utf-8"?>'
+Add-Content -Path "$UnattendPath" -Value ''
+Add-Content -Path "$UnattendPath" -Value "<!-- UnattendTool v$VersionInfo -->"
+Add-Content -Path "$UnattendPath" -Value '<!-- 开源协议: GPL-3.0 -->'
+Add-Content -Path "$UnattendPath" -Value '<!-- 官网: https://github.com/dsx42/UnattendTool -->'
+Add-Content -Path "$UnattendPath" -Value ''
+Add-Content -Path "$UnattendPath" -Value '<unattend xmlns="urn:schemas-microsoft-com:unattend">'
+Add-Content -Path "$UnattendPath" -Value '    <settings pass="windowsPE">'
+Add-Content -Path "$UnattendPath" -Value ("        <component name=`"Microsoft-Windows-International-Core-WinPE`"" `
         + " processorArchitecture=`"$ArchitectureName`" publicKeyToken=`"$Token`" language=`"neutral`"" `
         + " versionScope=`"nonSxS`" xmlns:wcm=`"http://schemas.microsoft.com/WMIConfig/2002/State`"" `
         + " xmlns:xsi=`"http://www.w3.org/2001/XMLSchema-instance`">")
-Add-Content -Path $UnattendPath -Value '            <SetupUILanguage>'
-Add-Content -Path $UnattendPath -Value "                <UILanguage>$Language</UILanguage>"
-Add-Content -Path $UnattendPath -Value '            </SetupUILanguage>'
-Add-Content -Path $UnattendPath -Value "            <InputLocale>$Language</InputLocale>"
-Add-Content -Path $UnattendPath -Value "            <UILanguage>$Language</UILanguage>"
-Add-Content -Path $UnattendPath -Value "            <SystemLocale>$Language</SystemLocale>"
-Add-Content -Path $UnattendPath -Value "            <UserLocale>$Language</UserLocale>"
-Add-Content -Path $UnattendPath -Value '        </component>'
-Add-Content -Path $UnattendPath -Value ''
-Add-Content -Path $UnattendPath -Value ("        <component name=`"Microsoft-Windows-Setup`"" `
+Add-Content -Path "$UnattendPath" -Value '            <SetupUILanguage>'
+Add-Content -Path "$UnattendPath" -Value "                <UILanguage>$Language</UILanguage>"
+Add-Content -Path "$UnattendPath" -Value '            </SetupUILanguage>'
+Add-Content -Path "$UnattendPath" -Value "            <InputLocale>$Language</InputLocale>"
+Add-Content -Path "$UnattendPath" -Value "            <UILanguage>$Language</UILanguage>"
+Add-Content -Path "$UnattendPath" -Value "            <SystemLocale>$Language</SystemLocale>"
+Add-Content -Path "$UnattendPath" -Value "            <UserLocale>$Language</UserLocale>"
+Add-Content -Path "$UnattendPath" -Value '        </component>'
+Add-Content -Path "$UnattendPath" -Value ''
+Add-Content -Path "$UnattendPath" -Value ("        <component name=`"Microsoft-Windows-Setup`"" `
         + " processorArchitecture=`"$ArchitectureName`" publicKeyToken=`"$Token`" language=`"neutral`"" `
         + " versionScope=`"nonSxS`" xmlns:wcm=`"http://schemas.microsoft.com/WMIConfig/2002/State`"" `
         + " xmlns:xsi=`"http://www.w3.org/2001/XMLSchema-instance`">")
-if (11 -eq $OsVersion) {
-    Add-Content -Path $UnattendPath -Value '            <RunSynchronous>'
-    Add-Content -Path $UnattendPath -Value '                <RunSynchronousCommand wcm:action="add">'
-    Add-Content -Path $UnattendPath -Value '                    <Order>1</Order>'
-    Add-Content -Path $UnattendPath -Value ('                    <Path>reg add "HKLM\System\Setup\LabConfig"' `
+if (11 -eq $OsVersion -and $ByPassCheck) {
+    Add-Content -Path "$UnattendPath" -Value '            <RunSynchronous>'
+    Add-Content -Path "$UnattendPath" -Value '                <RunSynchronousCommand wcm:action="add">'
+    Add-Content -Path "$UnattendPath" -Value '                    <Order>1</Order>'
+    Add-Content -Path "$UnattendPath" -Value ('                    <Path>reg add "HKLM\System\Setup\LabConfig"' `
             + ' /v "BypassTPMCheck" /t REG_DWORD /d "1" /f</Path>')
-    Add-Content -Path $UnattendPath -Value '                </RunSynchronousCommand>'
-    Add-Content -Path $UnattendPath -Value ''
-    Add-Content -Path $UnattendPath -Value '                <RunSynchronousCommand wcm:action="add">'
-    Add-Content -Path $UnattendPath -Value '                    <Order>2</Order>'
-    Add-Content -Path $UnattendPath -Value ('                    <Path>reg add "HKLM\System\Setup\LabConfig"' `
+    Add-Content -Path "$UnattendPath" -Value '                </RunSynchronousCommand>'
+    Add-Content -Path "$UnattendPath" -Value ''
+    Add-Content -Path "$UnattendPath" -Value '                <RunSynchronousCommand wcm:action="add">'
+    Add-Content -Path "$UnattendPath" -Value '                    <Order>2</Order>'
+    Add-Content -Path "$UnattendPath" -Value ('                    <Path>reg add "HKLM\System\Setup\LabConfig"' `
             + ' /v "BypassSecureBootCheck" /t REG_DWORD /d "1" /f</Path>')
-    Add-Content -Path $UnattendPath -Value '                </RunSynchronousCommand>'
-    Add-Content -Path $UnattendPath -Value ''
-    Add-Content -Path $UnattendPath -Value '                <RunSynchronousCommand wcm:action="add">'
-    Add-Content -Path $UnattendPath -Value '                    <Order>3</Order>'
-    Add-Content -Path $UnattendPath -Value ('                    <Path>reg add "HKLM\System\Setup\LabConfig"' `
+    Add-Content -Path "$UnattendPath" -Value '                </RunSynchronousCommand>'
+    Add-Content -Path "$UnattendPath" -Value ''
+    Add-Content -Path "$UnattendPath" -Value '                <RunSynchronousCommand wcm:action="add">'
+    Add-Content -Path "$UnattendPath" -Value '                    <Order>3</Order>'
+    Add-Content -Path "$UnattendPath" -Value ('                    <Path>reg add "HKLM\System\Setup\LabConfig"' `
             + ' /v "BypassRAMCheck" /t REG_DWORD /d "1" /f</Path>')
-    Add-Content -Path $UnattendPath -Value '                </RunSynchronousCommand>'
-    Add-Content -Path $UnattendPath -Value ''
-    Add-Content -Path $UnattendPath -Value '                <RunSynchronousCommand wcm:action="add">'
-    Add-Content -Path $UnattendPath -Value '                    <Order>4</Order>'
-    Add-Content -Path $UnattendPath -Value ('                    <Path>reg add "HKLM\System\Setup\LabConfig"' `
+    Add-Content -Path "$UnattendPath" -Value '                </RunSynchronousCommand>'
+    Add-Content -Path "$UnattendPath" -Value ''
+    Add-Content -Path "$UnattendPath" -Value '                <RunSynchronousCommand wcm:action="add">'
+    Add-Content -Path "$UnattendPath" -Value '                    <Order>4</Order>'
+    Add-Content -Path "$UnattendPath" -Value ('                    <Path>reg add "HKLM\System\Setup\LabConfig"' `
             + ' /v "BypassStorageCheck" /t REG_DWORD /d "1" /f</Path>')
-    Add-Content -Path $UnattendPath -Value '                </RunSynchronousCommand>'
-    Add-Content -Path $UnattendPath -Value ''
-    Add-Content -Path $UnattendPath -Value '                <RunSynchronousCommand wcm:action="add">'
-    Add-Content -Path $UnattendPath -Value '                    <Order>5</Order>'
-    Add-Content -Path $UnattendPath -Value ('                    <Path>reg add "HKLM\System\Setup\LabConfig"' `
+    Add-Content -Path "$UnattendPath" -Value '                </RunSynchronousCommand>'
+    Add-Content -Path "$UnattendPath" -Value ''
+    Add-Content -Path "$UnattendPath" -Value '                <RunSynchronousCommand wcm:action="add">'
+    Add-Content -Path "$UnattendPath" -Value '                    <Order>5</Order>'
+    Add-Content -Path "$UnattendPath" -Value ('                    <Path>reg add "HKLM\System\Setup\LabConfig"' `
             + ' /v "BypassCPUCheck" /t REG_DWORD /d "1" /f</Path>')
-    Add-Content -Path $UnattendPath -Value '                </RunSynchronousCommand>'
-    Add-Content -Path $UnattendPath -Value '            </RunSynchronous>'
-    Add-Content -Path $UnattendPath -Value ''
+    Add-Content -Path "$UnattendPath" -Value '                </RunSynchronousCommand>'
+    Add-Content -Path "$UnattendPath" -Value '            </RunSynchronous>'
+    Add-Content -Path "$UnattendPath" -Value ''
 }
-Add-Content -Path $UnattendPath -Value '            <EnableNetwork>false</EnableNetwork>'
-Add-Content -Path $UnattendPath -Value ''
-Add-Content -Path $UnattendPath -Value '            <UserData>'
-Add-Content -Path $UnattendPath -Value '                <AcceptEula>true</AcceptEula>'
+Add-Content -Path "$UnattendPath" -Value '            <EnableNetwork>false</EnableNetwork>'
+Add-Content -Path "$UnattendPath" -Value ''
+Add-Content -Path "$UnattendPath" -Value '            <UserData>'
+Add-Content -Path "$UnattendPath" -Value '                <AcceptEula>true</AcceptEula>'
 if ($FullName) {
-    Add-Content -Path $UnattendPath -Value "                <FullName>$FullName</FullName>"
+    Add-Content -Path "$UnattendPath" -Value "                <FullName>$FullName</FullName>"
 }
 if ($WindowsProductName) {
     $key = $ProductInfo['gvlk']
-    Add-Content -Path $UnattendPath -Value '                <ProductKey>'
-    Add-Content -Path $UnattendPath -Value "                    <Key>$key</Key>"
-    Add-Content -Path $UnattendPath -Value '                </ProductKey>'
+    Add-Content -Path "$UnattendPath" -Value '                <ProductKey>'
+    Add-Content -Path "$UnattendPath" -Value "                    <Key>$key</Key>"
+    Add-Content -Path "$UnattendPath" -Value '                </ProductKey>'
 }
-Add-Content -Path $UnattendPath -Value '            </UserData>'
-Add-Content -Path $UnattendPath -Value ''
+Add-Content -Path "$UnattendPath" -Value '            </UserData>'
+Add-Content -Path "$UnattendPath" -Value ''
 if ($WipeDisk -ne 0) {
-    Add-Content -Path $UnattendPath -Value '            <DiskConfiguration>'
-    Add-Content -Path $UnattendPath -Value '                <Disk wcm:action="add">'
-    Add-Content -Path $UnattendPath -Value "                    <DiskID>$DiskId</DiskID>"
-    Add-Content -Path $UnattendPath -Value ''
-    Add-Content -Path $UnattendPath -Value '                    <WillWipeDisk>true</WillWipeDisk>'
-    Add-Content -Path $UnattendPath -Value ''
-    Add-Content -Path $UnattendPath -Value '                    <CreatePartitions>'
+    Add-Content -Path "$UnattendPath" -Value '            <DiskConfiguration>'
+    Add-Content -Path "$UnattendPath" -Value '                <Disk wcm:action="add">'
+    Add-Content -Path "$UnattendPath" -Value "                    <DiskID>$DiskId</DiskID>"
+    Add-Content -Path "$UnattendPath" -Value ''
+    Add-Content -Path "$UnattendPath" -Value '                    <WillWipeDisk>true</WillWipeDisk>'
+    Add-Content -Path "$UnattendPath" -Value ''
+    Add-Content -Path "$UnattendPath" -Value '                    <CreatePartitions>'
     $CreatePartitionInfo.GetEnumerator() | ForEach-Object {
-        Add-Content -Path $UnattendPath -Value '                        <CreatePartition wcm:action="add">'
+        Add-Content -Path "$UnattendPath" -Value '                        <CreatePartition wcm:action="add">'
         if ($_.Value['Extend']) {
-            Add-Content -Path $UnattendPath -Value '                            <Extend>true</Extend>'
+            Add-Content -Path "$UnattendPath" -Value '                            <Extend>true</Extend>'
         }
         else {
             $Size = $_.Value['Size']
-            Add-Content -Path $UnattendPath -Value "                            <Size>$Size</Size>"
+            Add-Content -Path "$UnattendPath" -Value "                            <Size>$Size</Size>"
         }
         $Order = $_.Value['Order']
-        Add-Content -Path $UnattendPath -Value "                            <Order>$Order</Order>"
+        Add-Content -Path "$UnattendPath" -Value "                            <Order>$Order</Order>"
         $Type = $_.Value['Type']
-        Add-Content -Path $UnattendPath -Value "                            <Type>$Type</Type>"
-        Add-Content -Path $UnattendPath -Value '                        </CreatePartition>'
+        Add-Content -Path "$UnattendPath" -Value "                            <Type>$Type</Type>"
+        Add-Content -Path "$UnattendPath" -Value '                        </CreatePartition>'
     }
-    Add-Content -Path $UnattendPath -Value '                    </CreatePartitions>'
-    Add-Content -Path $UnattendPath -Value ''
-    Add-Content -Path $UnattendPath -Value '                    <ModifyPartitions>'
+    Add-Content -Path "$UnattendPath" -Value '                    </CreatePartitions>'
+    Add-Content -Path "$UnattendPath" -Value ''
+    Add-Content -Path "$UnattendPath" -Value '                    <ModifyPartitions>'
     $CreatePartitionInfo.GetEnumerator() | ForEach-Object {
-        Add-Content -Path $UnattendPath -Value '                        <ModifyPartition wcm:action="add">'
+        Add-Content -Path "$UnattendPath" -Value '                        <ModifyPartition wcm:action="add">'
         if ($WipeDisk -eq 2 -and $_.Value['IsBoot']) {
-            Add-Content -Path $UnattendPath -Value '                            <Active>true</Active>'
+            Add-Content -Path "$UnattendPath" -Value '                            <Active>true</Active>'
         }
         $Format = $_.Value['FileSystem']
         if ($Format) {
-            Add-Content -Path $UnattendPath -Value "                            <Format>$Format</Format>"
+            Add-Content -Path "$UnattendPath" -Value "                            <Format>$Format</Format>"
         }
         $Order = $_.Value['Order']
-        Add-Content -Path $UnattendPath -Value "                            <Order>$Order</Order>"
-        Add-Content -Path $UnattendPath -Value "                            <PartitionID>$Order</PartitionID>"
-        Add-Content -Path $UnattendPath -Value '                        </ModifyPartition>'
+        Add-Content -Path "$UnattendPath" -Value "                            <Order>$Order</Order>"
+        Add-Content -Path "$UnattendPath" -Value "                            <PartitionID>$Order</PartitionID>"
+        Add-Content -Path "$UnattendPath" -Value '                        </ModifyPartition>'
     }
-    Add-Content -Path $UnattendPath -Value '                    </ModifyPartitions>'
-    Add-Content -Path $UnattendPath -Value '                </Disk>'
-    Add-Content -Path $UnattendPath -Value '            </DiskConfiguration>'
-    Add-Content -Path $UnattendPath -Value ''
+    Add-Content -Path "$UnattendPath" -Value '                    </ModifyPartitions>'
+    Add-Content -Path "$UnattendPath" -Value '                </Disk>'
+    Add-Content -Path "$UnattendPath" -Value '            </DiskConfiguration>'
+    Add-Content -Path "$UnattendPath" -Value ''
 }
 elseif (!$NotFormat) {
-    Add-Content -Path $UnattendPath -Value '            <DiskConfiguration>'
-    Add-Content -Path $UnattendPath -Value '                <Disk wcm:action="add">'
-    Add-Content -Path $UnattendPath -Value "                    <DiskID>$DiskId</DiskID>"
-    Add-Content -Path $UnattendPath -Value ''
-    Add-Content -Path $UnattendPath -Value '                    <ModifyPartitions>'
-    Add-Content -Path $UnattendPath -Value '                        <ModifyPartition wcm:action="add">'
+    Add-Content -Path "$UnattendPath" -Value '            <DiskConfiguration>'
+    Add-Content -Path "$UnattendPath" -Value '                <Disk wcm:action="add">'
+    Add-Content -Path "$UnattendPath" -Value "                    <DiskID>$DiskId</DiskID>"
+    Add-Content -Path "$UnattendPath" -Value ''
+    Add-Content -Path "$UnattendPath" -Value '                    <ModifyPartitions>'
+    Add-Content -Path "$UnattendPath" -Value '                        <ModifyPartition wcm:action="add">'
     if ($PartitionStyle -ieq 'MBR') {
-        Add-Content -Path $UnattendPath -Value '                            <Active>true</Active>'
+        Add-Content -Path "$UnattendPath" -Value '                            <Active>true</Active>'
     }
-    Add-Content -Path $UnattendPath -Value '                            <Format>NTFS</Format>'
-    Add-Content -Path $UnattendPath -Value '                            <Order>1</Order>'
-    Add-Content -Path $UnattendPath -Value "                            <PartitionID>$PartitionId</PartitionID>"
-    Add-Content -Path $UnattendPath -Value '                        </ModifyPartition>'
-    Add-Content -Path $UnattendPath -Value '                    </ModifyPartitions>'
-    Add-Content -Path $UnattendPath -Value '                </Disk>'
-    Add-Content -Path $UnattendPath -Value '            </DiskConfiguration>'
-    Add-Content -Path $UnattendPath -Value ''
+    Add-Content -Path "$UnattendPath" -Value '                            <Format>NTFS</Format>'
+    Add-Content -Path "$UnattendPath" -Value '                            <Order>1</Order>'
+    Add-Content -Path "$UnattendPath" -Value "                            <PartitionID>$PartitionId</PartitionID>"
+    Add-Content -Path "$UnattendPath" -Value '                        </ModifyPartition>'
+    Add-Content -Path "$UnattendPath" -Value '                    </ModifyPartitions>'
+    Add-Content -Path "$UnattendPath" -Value '                </Disk>'
+    Add-Content -Path "$UnattendPath" -Value '            </DiskConfiguration>'
+    Add-Content -Path "$UnattendPath" -Value ''
 }
-Add-Content -Path $UnattendPath -Value '            <ImageInstall>'
-Add-Content -Path $UnattendPath -Value '                <OSImage>'
+Add-Content -Path "$UnattendPath" -Value '            <ImageInstall>'
+Add-Content -Path "$UnattendPath" -Value '                <OSImage>'
 if ($WindowsProductName) {
     $ImageName = 'Windows 10 ' + $ProductInfo['US']
-    Add-Content -Path $UnattendPath -Value '                    <InstallFrom>'
-    Add-Content -Path $UnattendPath -Value '                        <MetaData wcm:action="add">'
-    Add-Content -Path $UnattendPath -Value '                            <Key>/IMAGE/NAME</Key>'
-    Add-Content -Path $UnattendPath -Value "                            <Value>$ImageName</Value>"
-    Add-Content -Path $UnattendPath -Value '                        </MetaData>'
-    Add-Content -Path $UnattendPath -Value '                    </InstallFrom>'
-    Add-Content -Path $UnattendPath -Value ''
+    Add-Content -Path "$UnattendPath" -Value '                    <InstallFrom>'
+    Add-Content -Path "$UnattendPath" -Value '                        <MetaData wcm:action="add">'
+    Add-Content -Path "$UnattendPath" -Value '                            <Key>/IMAGE/NAME</Key>'
+    Add-Content -Path "$UnattendPath" -Value "                            <Value>$ImageName</Value>"
+    Add-Content -Path "$UnattendPath" -Value '                        </MetaData>'
+    Add-Content -Path "$UnattendPath" -Value '                    </InstallFrom>'
+    Add-Content -Path "$UnattendPath" -Value ''
 }
 
-Add-Content -Path $UnattendPath -Value '                    <InstallTo>'
-Add-Content -Path $UnattendPath -Value "                        <DiskID>$DiskId</DiskID>"
-Add-Content -Path $UnattendPath -Value "                        <PartitionID>$PartitionId</PartitionID>"
-Add-Content -Path $UnattendPath -Value '                    </InstallTo>'
-Add-Content -Path $UnattendPath -Value '                </OSImage>'
-Add-Content -Path $UnattendPath -Value '            </ImageInstall>'
-Add-Content -Path $UnattendPath -Value '        </component>'
-Add-Content -Path $UnattendPath -Value '    </settings>'
-Add-Content -Path $UnattendPath -Value ''
-Add-Content -Path $UnattendPath -Value '    <settings pass="specialize">'
-Add-Content -Path $UnattendPath -Value ("        <component name=`"Microsoft-Windows-Security-SPP-UX`"" `
+Add-Content -Path "$UnattendPath" -Value '                    <InstallTo>'
+Add-Content -Path "$UnattendPath" -Value "                        <DiskID>$DiskId</DiskID>"
+Add-Content -Path "$UnattendPath" -Value "                        <PartitionID>$PartitionId</PartitionID>"
+Add-Content -Path "$UnattendPath" -Value '                    </InstallTo>'
+Add-Content -Path "$UnattendPath" -Value '                </OSImage>'
+Add-Content -Path "$UnattendPath" -Value '            </ImageInstall>'
+Add-Content -Path "$UnattendPath" -Value '        </component>'
+Add-Content -Path "$UnattendPath" -Value '    </settings>'
+Add-Content -Path "$UnattendPath" -Value ''
+Add-Content -Path "$UnattendPath" -Value '    <settings pass="specialize">'
+Add-Content -Path "$UnattendPath" -Value ("        <component name=`"Microsoft-Windows-Security-SPP-UX`"" `
         + " processorArchitecture=`"$ArchitectureName`" publicKeyToken=`"$Token`" language=`"neutral`"" `
         + " versionScope=`"nonSxS`" xmlns:wcm=`"http://schemas.microsoft.com/WMIConfig/2002/State`"" `
         + " xmlns:xsi=`"http://www.w3.org/2001/XMLSchema-instance`">")
-Add-Content -Path $UnattendPath -Value '            <SkipAutoActivation>true</SkipAutoActivation>'
-Add-Content -Path $UnattendPath -Value '        </component>'
-Add-Content -Path $UnattendPath -Value ''
-Add-Content -Path $UnattendPath -Value ("        <component name=`"Microsoft-Windows-SQMApi`"" `
+Add-Content -Path "$UnattendPath" -Value '            <SkipAutoActivation>true</SkipAutoActivation>'
+Add-Content -Path "$UnattendPath" -Value '        </component>'
+Add-Content -Path "$UnattendPath" -Value ''
+Add-Content -Path "$UnattendPath" -Value ("        <component name=`"Microsoft-Windows-SQMApi`"" `
         + " processorArchitecture=`"$ArchitectureName`" publicKeyToken=`"$Token`" language=`"neutral`"" `
         + " versionScope=`"nonSxS`" xmlns:wcm=`"http://schemas.microsoft.com/WMIConfig/2002/State`"" `
         + " xmlns:xsi=`"http://www.w3.org/2001/XMLSchema-instance`">")
-Add-Content -Path $UnattendPath -Value '            <CEIPEnabled>0</CEIPEnabled>'
-Add-Content -Path $UnattendPath -Value '        </component>'
+Add-Content -Path "$UnattendPath" -Value '            <CEIPEnabled>0</CEIPEnabled>'
+Add-Content -Path "$UnattendPath" -Value '        </component>'
 if ($WindowsProductName) {
     $key = $ProductInfo['gvlk']
-    Add-Content -Path $UnattendPath -Value ''
-    Add-Content -Path $UnattendPath -Value ("        <component name=`"Microsoft-Windows-Shell-Setup`"" `
+    Add-Content -Path "$UnattendPath" -Value ''
+    Add-Content -Path "$UnattendPath" -Value ("        <component name=`"Microsoft-Windows-Shell-Setup`"" `
             + " processorArchitecture=`"$ArchitectureName`" publicKeyToken=`"$Token`" language=`"neutral`"" `
             + " versionScope=`"nonSxS`" xmlns:wcm=`"http://schemas.microsoft.com/WMIConfig/2002/State`"" `
             + " xmlns:xsi=`"http://www.w3.org/2001/XMLSchema-instance`">")
-    Add-Content -Path $UnattendPath -Value "            <ProductKey>$key</ProductKey>"
-    Add-Content -Path $UnattendPath -Value '        </component>'
+    Add-Content -Path "$UnattendPath" -Value "            <ProductKey>$key</ProductKey>"
+    Add-Content -Path "$UnattendPath" -Value '        </component>'
 }
-Add-Content -Path $UnattendPath -Value '    </settings>'
-Add-Content -Path $UnattendPath -Value ''
-Add-Content -Path $UnattendPath -Value '    <settings pass="oobeSystem">'
-Add-Content -Path $UnattendPath -Value ("        <component name=`"Microsoft-Windows-International-Core`"" `
+Add-Content -Path "$UnattendPath" -Value '    </settings>'
+Add-Content -Path "$UnattendPath" -Value ''
+Add-Content -Path "$UnattendPath" -Value '    <settings pass="oobeSystem">'
+Add-Content -Path "$UnattendPath" -Value ("        <component name=`"Microsoft-Windows-International-Core`"" `
         + " processorArchitecture=`"$ArchitectureName`" publicKeyToken=`"$Token`" language=`"neutral`"" `
         + " versionScope=`"nonSxS`" xmlns:wcm=`"http://schemas.microsoft.com/WMIConfig/2002/State`"" `
         + " xmlns:xsi=`"http://www.w3.org/2001/XMLSchema-instance`">")
-Add-Content -Path $UnattendPath -Value "            <InputLocale>$Language</InputLocale>"
-Add-Content -Path $UnattendPath -Value "            <UILanguage>$Language</UILanguage>"
-Add-Content -Path $UnattendPath -Value "            <SystemLocale>$Language</SystemLocale>"
-Add-Content -Path $UnattendPath -Value "            <UserLocale>$Language</UserLocale>"
-Add-Content -Path $UnattendPath -Value '        </component>'
-Add-Content -Path $UnattendPath -Value ''
-Add-Content -Path $UnattendPath -Value ("        <component name=`"Microsoft-Windows-Shell-Setup`"" `
+Add-Content -Path "$UnattendPath" -Value "            <InputLocale>$Language</InputLocale>"
+Add-Content -Path "$UnattendPath" -Value "            <UILanguage>$Language</UILanguage>"
+Add-Content -Path "$UnattendPath" -Value "            <SystemLocale>$Language</SystemLocale>"
+Add-Content -Path "$UnattendPath" -Value "            <UserLocale>$Language</UserLocale>"
+Add-Content -Path "$UnattendPath" -Value '        </component>'
+Add-Content -Path "$UnattendPath" -Value ''
+Add-Content -Path "$UnattendPath" -Value ("        <component name=`"Microsoft-Windows-Shell-Setup`"" `
         + " processorArchitecture=`"$ArchitectureName`" publicKeyToken=`"$Token`" language=`"neutral`"" `
         + " versionScope=`"nonSxS`" xmlns:wcm=`"http://schemas.microsoft.com/WMIConfig/2002/State`"" `
         + " xmlns:xsi=`"http://www.w3.org/2001/XMLSchema-instance`">")
 if ($FullName) {
-    Add-Content -Path $UnattendPath -Value '            <AutoLogon>'
-    Add-Content -Path $UnattendPath -Value '                <Password>'
+    Add-Content -Path "$UnattendPath" -Value '            <AutoLogon>'
+    Add-Content -Path "$UnattendPath" -Value '                <Password>'
     if ($Password) {
-        Add-Content -Path $UnattendPath -Value "                    <Value>$Password</Value>"
+        Add-Content -Path "$UnattendPath" -Value "                    <Value>$Password</Value>"
     }
     else {
-        Add-Content -Path $UnattendPath -Value '                    <Value/>'
+        Add-Content -Path "$UnattendPath" -Value '                    <Value/>'
     }
-    Add-Content -Path $UnattendPath -Value '                    <PlainText>true</PlainText>'
-    Add-Content -Path $UnattendPath -Value '                </Password>'
-    Add-Content -Path $UnattendPath -Value '                <Enabled>true</Enabled>'
-    Add-Content -Path $UnattendPath -Value "                <Username>$FullName</Username>"
-    Add-Content -Path $UnattendPath -Value '            </AutoLogon>'
-    Add-Content -Path $UnattendPath -Value ''
-    Add-Content -Path $UnattendPath -Value '            <UserAccounts>'
-    Add-Content -Path $UnattendPath -Value '                <LocalAccounts>'
-    Add-Content -Path $UnattendPath -Value '                    <LocalAccount wcm:action="add">'
-    Add-Content -Path $UnattendPath -Value '                        <Password>'
+    Add-Content -Path "$UnattendPath" -Value '                    <PlainText>true</PlainText>'
+    Add-Content -Path "$UnattendPath" -Value '                </Password>'
+    Add-Content -Path "$UnattendPath" -Value '                <Enabled>true</Enabled>'
+    Add-Content -Path "$UnattendPath" -Value "                <Username>$FullName</Username>"
+    Add-Content -Path "$UnattendPath" -Value '            </AutoLogon>'
+    Add-Content -Path "$UnattendPath" -Value ''
+    Add-Content -Path "$UnattendPath" -Value '            <UserAccounts>'
+    Add-Content -Path "$UnattendPath" -Value '                <LocalAccounts>'
+    Add-Content -Path "$UnattendPath" -Value '                    <LocalAccount wcm:action="add">'
+    Add-Content -Path "$UnattendPath" -Value '                        <Password>'
     if ($Password) {
-        Add-Content -Path $UnattendPath -Value "                            <Value>$Password</Value>"
+        Add-Content -Path "$UnattendPath" -Value "                            <Value>$Password</Value>"
     }
     else {
-        Add-Content -Path $UnattendPath -Value '                            <Value/>'
+        Add-Content -Path "$UnattendPath" -Value '                            <Value/>'
     }
-    Add-Content -Path $UnattendPath -Value '                            <PlainText>true</PlainText>'
-    Add-Content -Path $UnattendPath -Value '                        </Password>'
-    Add-Content -Path $UnattendPath -Value "                        <DisplayName>$FullName</DisplayName>"
-    Add-Content -Path $UnattendPath -Value '                        <Group>Administrators</Group>'
-    Add-Content -Path $UnattendPath -Value "                        <Name>$FullName</Name>"
-    Add-Content -Path $UnattendPath -Value '                    </LocalAccount>'
-    Add-Content -Path $UnattendPath -Value '                </LocalAccounts>'
-    Add-Content -Path $UnattendPath -Value '            </UserAccounts>'
-    Add-Content -Path $UnattendPath -Value ''
-    Add-Content -Path $UnattendPath -Value "            <RegisteredOwner>$FullName</RegisteredOwner>"
-    Add-Content -Path $UnattendPath -Value ''
+    Add-Content -Path "$UnattendPath" -Value '                            <PlainText>true</PlainText>'
+    Add-Content -Path "$UnattendPath" -Value '                        </Password>'
+    Add-Content -Path "$UnattendPath" -Value "                        <DisplayName>$FullName</DisplayName>"
+    Add-Content -Path "$UnattendPath" -Value '                        <Group>Administrators</Group>'
+    Add-Content -Path "$UnattendPath" -Value "                        <Name>$FullName</Name>"
+    Add-Content -Path "$UnattendPath" -Value '                    </LocalAccount>'
+    Add-Content -Path "$UnattendPath" -Value '                </LocalAccounts>'
+    Add-Content -Path "$UnattendPath" -Value '            </UserAccounts>'
+    Add-Content -Path "$UnattendPath" -Value ''
+    Add-Content -Path "$UnattendPath" -Value "            <RegisteredOwner>$FullName</RegisteredOwner>"
+    Add-Content -Path "$UnattendPath" -Value ''
 }
-Add-Content -Path $UnattendPath -Value '            <OOBE>'
-Add-Content -Path $UnattendPath -Value '                <HideEULAPage>true</HideEULAPage>'
-Add-Content -Path $UnattendPath -Value '                <HideOEMRegistrationScreen>true</HideOEMRegistrationScreen>'
-Add-Content -Path $UnattendPath -Value '                <HideOnlineAccountScreens>true</HideOnlineAccountScreens>'
-Add-Content -Path $UnattendPath -Value '                <HideWirelessSetupInOOBE>true</HideWirelessSetupInOOBE>'
-Add-Content -Path $UnattendPath -Value '                <HideLocalAccountScreen>true</HideLocalAccountScreen>'
-Add-Content -Path $UnattendPath -Value '                <ProtectYourPC>3</ProtectYourPC>'
-Add-Content -Path $UnattendPath -Value '            </OOBE>'
-Add-Content -Path $UnattendPath -Value ''
-Add-Content -Path $UnattendPath -Value '            <FirstLogonCommands>'
-Add-Content -Path $UnattendPath -Value '                <SynchronousCommand wcm:action="add">'
-Add-Content -Path $UnattendPath -Value '                    <Order>1</Order>'
-Add-Content -Path $UnattendPath -Value ('                    <CommandLine>cmd /C del /f /q %WINDIR%\Panther' `
+Add-Content -Path "$UnattendPath" -Value '            <OOBE>'
+Add-Content -Path "$UnattendPath" -Value '                <HideEULAPage>true</HideEULAPage>'
+Add-Content -Path "$UnattendPath" -Value '                <HideOEMRegistrationScreen>true</HideOEMRegistrationScreen>'
+Add-Content -Path "$UnattendPath" -Value '                <HideOnlineAccountScreens>true</HideOnlineAccountScreens>'
+Add-Content -Path "$UnattendPath" -Value '                <HideWirelessSetupInOOBE>true</HideWirelessSetupInOOBE>'
+Add-Content -Path "$UnattendPath" -Value '                <HideLocalAccountScreen>true</HideLocalAccountScreen>'
+Add-Content -Path "$UnattendPath" -Value '                <ProtectYourPC>3</ProtectYourPC>'
+Add-Content -Path "$UnattendPath" -Value '            </OOBE>'
+Add-Content -Path "$UnattendPath" -Value ''
+Add-Content -Path "$UnattendPath" -Value '            <FirstLogonCommands>'
+Add-Content -Path "$UnattendPath" -Value '                <SynchronousCommand wcm:action="add">'
+Add-Content -Path "$UnattendPath" -Value '                    <Order>1</Order>'
+Add-Content -Path "$UnattendPath" -Value ('                    <CommandLine>cmd /C del /f /q %WINDIR%\Panther' `
         + '\unattend.xml</CommandLine>')
-Add-Content -Path $UnattendPath -Value '                </SynchronousCommand>'
+Add-Content -Path "$UnattendPath" -Value '                </SynchronousCommand>'
 if ($Password) {
-    Add-Content -Path $UnattendPath -Value ''
-    Add-Content -Path $UnattendPath -Value '                <SynchronousCommand wcm:action="add">'
-    Add-Content -Path $UnattendPath -Value '                    <Order>2</Order>'
-    Add-Content -Path $UnattendPath -Value ('                    <CommandLine>cmd /C wmic useraccount' `
+    Add-Content -Path "$UnattendPath" -Value ''
+    Add-Content -Path "$UnattendPath" -Value '                <SynchronousCommand wcm:action="add">'
+    Add-Content -Path "$UnattendPath" -Value '                    <Order>2</Order>'
+    Add-Content -Path "$UnattendPath" -Value ('                    <CommandLine>cmd /C wmic useraccount' `
             + " where 'Name=`"$FullName`"' set PasswordExpires=false</CommandLine>")
-    Add-Content -Path $UnattendPath -Value '                </SynchronousCommand>'
+    Add-Content -Path "$UnattendPath" -Value '                </SynchronousCommand>'
 }
-Add-Content -Path $UnattendPath -Value '            </FirstLogonCommands>'
-Add-Content -Path $UnattendPath -Value '        </component>'
-Add-Content -Path $UnattendPath -Value '    </settings>'
-Add-Content -Path $UnattendPath -Value '</unattend>'
+Add-Content -Path "$UnattendPath" -Value '            </FirstLogonCommands>'
+Add-Content -Path "$UnattendPath" -Value '        </component>'
+Add-Content -Path "$UnattendPath" -Value '    </settings>'
+Add-Content -Path "$UnattendPath" -Value '</unattend>'
 
-Write-Host -Object ('生成的应答文件位置: ' + $UnattendPath)
+Write-Host -Object ('生成的应答文件位置: ' + $UnattendPath) -ForegroundColor Green
 Write-Host -Object ''
 if ($Interactive) {
     Read-Host -Prompt '按回车键关闭此窗口'

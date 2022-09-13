@@ -3,7 +3,7 @@
     "author": "dsx42",
     "license": "GPL-3.0",
     "home": "https://github.com/dsx42/UnattendTool",
-    "version": "2022.8.23",
+    "version": "2022.9.14",
     "files": [
         "UnattendTool.cmd",
         "UnattendTool.ps1",
