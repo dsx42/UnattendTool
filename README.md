@@ -10,7 +10,7 @@
 
 # 下载
 
-从如下链接下载最新的版本：`UnattendTool_版本号.zip`
+从如下链接下载最新的版本：`UnattendTool_v2022.9.14.zip`
 
 > https://github.com/dsx42/UnattendTool/releases
 
