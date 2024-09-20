@@ -1592,7 +1592,7 @@ elseif (!$NotFormat) {
 Add-Content -Path "$UnattendPath" -Value '            <ImageInstall>'
 Add-Content -Path "$UnattendPath" -Value '                <OSImage>'
 if ($WindowsProductName) {
-    $ImageName = 'Windows 10 ' + $ProductInfo['US']
+    $ImageName = 'Windows ' + $OsVersion + ' ' + $ProductInfo['US']
     Add-Content -Path "$UnattendPath" -Value '                    <InstallFrom>'
     Add-Content -Path "$UnattendPath" -Value '                        <MetaData wcm:action="add">'
     Add-Content -Path "$UnattendPath" -Value '                            <Key>/IMAGE/NAME</Key>'
